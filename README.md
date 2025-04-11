@@ -1,6 +1,6 @@
 # 🕊️ Legacy – Sistema Web de Gestión Funeraria
 
-**Repositorio del proyecto final del equipo _Recuerda Devs_ para la materia de Ingeniería de Software.**
+**Repositorio del proyecto final del equipo  para la materia de Ingeniería de Software.**
 
 ---
 
