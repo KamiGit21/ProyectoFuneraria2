@@ -45,23 +45,45 @@ El sistema moderniza la funeraria **Legacy**, permitiendo:
 
 ---
 
-## 🚀 Tecnologías Clave
+🚀 Tecnologías Clave
+🔹 Frontend
+React + Vite: Construcción de interfaces SPA responsivas y tipo PWA.
 
-> *(Este bloque puedes completarlo con lo que usen: React, Node.js, PostgreSQL, Docker, etc.)*
+Material UI / Bootstrap: Componentes UI modernos y accesibles.
 
----
+Redux (opcional): Gestión global del estado de la aplicación.
 
-## 📁 Estructura del Repositorio
+🔹 Backend
+Node.js + Express: API RESTful y lógica del servidor.
 
-> *(Opcional: Agrega una breve guía si hay varias carpetas o microservicios.)*
+Prisma ORM: Manejo de base de datos con migraciones y tipado fuerte.
 
----
+JWT + bcrypt: Autenticación y autorización seguras.
+
+🔹 Base de Datos
+PostgreSQL: Almacenamiento relacional robusto y escalable.
+
+🔹 Dashboards y Reportes
+Chart.js / ApexCharts: Visualización de métricas e indicadores.
+
+PDFKit: Generación de comprobantes y documentos PDF.
+
+🔹 Importación de Datos
+csv-parser: Procesamiento de archivos CSV o Excel.
+
+🔹 Móvil
+Responsive Web Design / PWA: Adaptación a dispositivos móviles.
+
+React Native (opcional): Aplicación móvil nativa con Expo.
+
+🔹 DevOps y Herramientas
+Docker (opcional): Contenedorización del sistema y entorno unificado.
+
+Git + GitHub: Control de versiones con flujos Pull Request.
+
+Jira: Gestión de tareas y seguimiento ágil.
 
 ## 📝 Licencia
 
-> *(Si es un proyecto académico sin licencia específica, puedes usar algo como:)*  
 Este proyecto es parte de un trabajo académico y no está destinado a uso comercial.
 
----
-
-¡Listo para GitHub! Si quieres, también puedo ayudarte a agregar badges (como build, licencia, etc.) o una imagen del prototipo/interfaz. ¿Te gustaría?
