@@ -1,5 +1,5 @@
 import { useState, useContext } from 'react';
-import { Box, Button, Container, TextField, Typography, Alert } from '@mui/material';
+import { Box, Button, Container, TextField, Typography, Alert, Link } from '@mui/material';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
@@ -9,9 +9,9 @@ export default function Login() {
   const [password, setPwd] = useState('');
   const [error, setError] = useState('');
   
-  // Aquí accedemos al contexto, ya no será null porque está envuelto por el provider.
+  // Accedemos al contexto y verificamos que no sea null
   const authCtx = useContext(AuthContext);
-  if(!authCtx) {
+  if (!authCtx) {
     return <div>Error en la configuración del contexto</div>;
   }
   const { login } = authCtx;
@@ -33,7 +33,9 @@ export default function Login() {
   return (
     <Container maxWidth="sm">
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 10 }}>
-        <Typography variant="h1" gutterBottom>Iniciar Sesión</Typography>
+        <Typography variant="h1" gutterBottom>
+          Iniciar Sesión
+        </Typography>
         {error && <Alert severity="error">{error}</Alert>}
         <TextField
           label="Correo"
@@ -50,9 +52,22 @@ export default function Login() {
           value={password}
           onChange={e => setPwd(e.target.value)}
         />
-        <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          sx={{ mt: 2, fontSize: '1.2rem', py: 1.5 }}
+        >
           Entrar
         </Button>
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+          <Link href="#" underline="hover">
+            Olvidé mi contraseña
+          </Link>
+          <Link href="#" underline="hover">
+            Registrarse
+          </Link>
+        </Box>
       </Box>
     </Container>
   );
