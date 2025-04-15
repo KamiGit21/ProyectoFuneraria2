@@ -1,18 +1,18 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import Navbar from "./componentes/navbar/Navbar";
-import './index.css'
-import App from './App.tsx'
+// web/src/main.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import { theme } from './theme';
+import AppRoutes from './routes';
+import { AuthProvider } from './contexts/AuthContext';
 
-const rootElement = document.getElementById("root");
-
-if (!rootElement) throw new Error("root element not found");
-
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <div style={{ display: "inline-block", width: "1366px" }} data-ignore="used only for top most containter width">
-    <Navbar />
-    </div>
-    <App />
-  </StrictMode>,
-)
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </ThemeProvider>
+  </React.StrictMode>
+);

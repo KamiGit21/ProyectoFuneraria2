@@ -1,0 +1,294 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id                Int               @id @default(autoincrement())
+  email             String            @unique
+  password_hash     String
+  rol               Rol
+  estado            Estado            @default(ACTIVO)
+  creado_en         DateTime          @default(now())
+  actualizado_en    DateTime          @default(now())
+  auditorias        Auditoria[]
+  condolencias      Condolencia[]     @relation("AutorCondolencia")
+  evaluaciones      Evaluacion[]
+  importacionCSV    ImportacionCsv[]
+  notificaciones    Notificacion[]
+  ordenesCliente    Orden[]           @relation("ClienteOrden")
+  ordenesOperador   Orden[]           @relation("OperadorOrden")
+  pagos             Pago[]
+  perfilAdmin       PerfilAdmin?
+  perfilCliente     PerfilCliente?
+  perfilOperador    PerfilOperador?
+  personalizaciones Personalizacion[]
+
+  @@map("usuario")
+}
+
+model PerfilCliente {
+  usuario_id Int     @id
+  nombres    String?
+  apellidos  String?
+  telefono   String?
+  direccion  String?
+  usuario    Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@map("perfil_cliente")
+}
+
+model PerfilOperador {
+  usuario_id Int     @id
+  ci         String?
+  cargo      String?
+  telefono   String?
+  nombres    String? @db.VarChar(80)
+  usuario    Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@map("perfil_operador")
+}
+
+model PerfilAdmin {
+  usuario_id      Int     @id
+  nombre_completo String?
+  usuario         Usuario @relation(fields: [usuario_id], references: [id], onDelete: Cascade)
+
+  @@map("perfil_admin")
+}
+
+model Servicio {
+  id             Int            @id @default(autoincrement())
+  nombre         String
+  descripcion    String
+  precio_base    Decimal
+  activo         Boolean        @default(true)
+  creado_en      DateTime       @default(now())
+  orden_detalles OrdenDetalle[]
+
+  @@map("servicio")
+}
+
+model Orden {
+  id             Int            @id @default(autoincrement())
+  cliente_id     Int
+  operador_id    Int?
+  estado         OrdenEstado    @default(PENDIENTE)
+  total          Decimal
+  creado_en      DateTime       @default(now())
+  actualizado_en DateTime       @default(now())
+  difuntos       Difunto[]
+  obituarios     Obituario[]
+  cliente        Usuario        @relation("ClienteOrden", fields: [cliente_id], references: [id])
+  operador       Usuario?       @relation("OperadorOrden", fields: [operador_id], references: [id])
+  orden_detalles OrdenDetalle[]
+  pagos          Pago[]
+
+  @@map("orden")
+}
+
+model OrdenDetalle {
+  id              Int      @id @default(autoincrement())
+  orden_id        Int
+  servicio_id     Int
+  descripcion_srv String?
+  precio_unitario Decimal
+  cantidad        Int      @default(1)
+  subtotal        Decimal
+  orden           Orden    @relation(fields: [orden_id], references: [id], onDelete: Cascade)
+  servicio        Servicio @relation(fields: [servicio_id], references: [id])
+
+  @@map("orden_detalle")
+}
+
+model Difunto {
+  id              Int      @id @default(autoincrement())
+  orden_id        Int
+  nombres         String
+  fecha_fallecido DateTime
+  orden           Orden    @relation(fields: [orden_id], references: [id], onDelete: Cascade)
+
+  @@map("difunto")
+}
+
+model Pago {
+  id         Int        @id @default(autoincrement())
+  orden_id   Int
+  cliente_id Int
+  monto      Decimal
+  metodo     MetodoPago
+  estado     EstadoPago
+  referencia String?
+  pagado_en  DateTime?
+  cliente    Usuario    @relation(fields: [cliente_id], references: [id])
+  orden      Orden      @relation(fields: [orden_id], references: [id])
+
+  @@map("pago")
+}
+
+model Obituario {
+  id           Int           @id @default(autoincrement())
+  orden_id     Int
+  titulo       String?
+  mensaje      String
+  url_slug     String        @unique
+  publicado    Boolean       @default(false)
+  creado_en    DateTime      @default(now())
+  condolencias Condolencia[]
+  orden        Orden         @relation(fields: [orden_id], references: [id])
+
+  @@map("obituario")
+}
+
+model Condolencia {
+  id           Int               @id @default(autoincrement())
+  obituario_id Int
+  autor_id     Int
+  mensaje      String?
+  imagen_url   String?
+  estado       CondolenciaEstado @default(PENDIENTE)
+  creado_en    DateTime          @default(now())
+  autor        Usuario           @relation("AutorCondolencia", fields: [autor_id], references: [id])
+  obituario    Obituario         @relation(fields: [obituario_id], references: [id], onDelete: Cascade)
+
+  @@map("condolencia")
+}
+
+model Notificacion {
+  id          Int      @id @default(autoincrement())
+  usuario_id  Int
+  asunto      String?
+  cuerpo      String?
+  leida       Boolean  @default(false)
+  fecha_envio DateTime
+  usuario     Usuario  @relation(fields: [usuario_id], references: [id])
+
+  @@map("notificacion")
+}
+
+model ImportacionCsv {
+  id              Int      @id @default(autoincrement())
+  admin_id        Int
+  archivo_nombre  String?
+  total_registros Int
+  exitosos        Int
+  con_errores     Int
+  ejecutado_en    DateTime @default(now())
+  admin           Usuario  @relation(fields: [admin_id], references: [id])
+
+  @@map("importacion_csv")
+}
+
+model Auditoria {
+  id           Int       @id @default(autoincrement())
+  usuario_id   Int
+  tabla        String
+  operacion    Operacion
+  registro_id  Int
+  antes        Json?
+  despues      Json?
+  realizado_en DateTime  @default(now())
+  usuario      Usuario   @relation(fields: [usuario_id], references: [id])
+
+  @@map("auditoria")
+}
+
+model FAQ {
+  id        Int    @id @default(autoincrement())
+  pregunta  String
+  respuesta String
+
+  @@map("faq")
+}
+
+model RecursoAyuda {
+  id        Int         @id @default(autoincrement())
+  titulo    String
+  contenido String
+  tipo      RecursoTipo
+
+  @@map("recurso_ayuda")
+}
+
+model Evaluacion {
+  id         Int      @id @default(autoincrement())
+  cliente_id Int
+  puntuacion Int      @default(0)
+  comentario String
+  creado_en  DateTime @default(now())
+  cliente    Usuario  @relation(fields: [cliente_id], references: [id])
+
+  @@map("evaluacion")
+}
+
+model Personalizacion {
+  id              Int      @id @default(autoincrement())
+  cliente_id      Int
+  detalles        String
+  fecha_solicitud DateTime
+  cliente         Usuario  @relation(fields: [cliente_id], references: [id])
+
+  @@map("personalizacion")
+}
+
+model Admin {
+  id           Int    @id @default(autoincrement())
+  nombre       String
+  email        String @unique
+  passwordHash String
+
+  @@map("admin")
+}
+
+enum Rol {
+  CLIENTE
+  OPERADOR
+  ADMIN
+}
+
+enum Estado {
+  ACTIVO
+  INACTIVO
+}
+
+enum OrdenEstado {
+  PENDIENTE
+  EN_PROCESO
+  FINALIZADO
+  PAGADO
+  ANULADO
+}
+
+enum MetodoPago {
+  TARJETA
+  TRANSFERENCIA
+  EFECTIVO
+}
+
+enum EstadoPago {
+  PENDIENTE
+  COMPLETADO
+  FALLIDO
+}
+
+enum CondolenciaEstado {
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+enum Operacion {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+enum RecursoTipo {
+  ARTICULO
+  VIDEO
+  AUDIO
+}
