@@ -1,19 +1,25 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from 'react-router-dom';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import RegistrarCliente from './pages/RegistrarCliente';
-import AdminUsuarios from './pages/AdminUsuarios'; // Importa AdminUsuarios
 import PrivateRoute from './components/PrivateRoute';
 import Navbar from './components/Navbar';
 
 function MainRoutes() {
   const location = useLocation();
+  // Define los paths en los que no quieres mostrar el Navbar; en este caso, login
   const hideNavbarPaths = ['/login'];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
 
   return (
     <>
-      {showNavbar && <Navbar />}
+      {showNavbar && <Navbar />} {/* Renderiza el Navbar si no estamos en /login */}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -22,14 +28,6 @@ function MainRoutes() {
           element={
             <PrivateRoute roles={['OPERADOR', 'ADMIN']}>
               <RegistrarCliente />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/AdminUsuarios"
-          element={
-            <PrivateRoute roles={['ADMIN']}>
-              <AdminUsuarios />
             </PrivateRoute>
           }
         />
