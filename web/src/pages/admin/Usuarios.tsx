@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "@/services/axios";
-import { Button } from "@/components/ui/button";
+import axios from "../../services/axios";
+import { Button } from "../../components/Button";
 
 type Rol = {
   id: string;
@@ -56,30 +56,29 @@ const Usuarios = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-semibold mb-4">Administración de Usuarios</h1>
-      <table className="w-full table-auto border border-gray-300">
-        <thead className="bg-gray-100">
+    <div style={{ padding: "20px" }}>
+      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "16px" }}>
+        Administración de Usuarios
+      </h1>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead style={{ backgroundColor: "#f0f0f0" }}>
           <tr>
-            <th className="p-2 border">Nombre</th>
-            <th className="p-2 border">Correo</th>
-            <th className="p-2 border">Rol</th>
-            <th className="p-2 border">Estado</th>
-            <th className="p-2 border">Acciones</th>
+            <th style={thStyle}>Nombre</th>
+            <th style={thStyle}>Correo</th>
+            <th style={thStyle}>Rol</th>
+            <th style={thStyle}>Estado</th>
+            <th style={thStyle}>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {usuarios.map((usuario) => (
-            <tr key={usuario.id} className="text-center">
-              <td className="border p-2">{usuario.nombre}</td>
-              <td className="border p-2">{usuario.correo}</td>
-              <td className="border p-2 capitalize">{usuario.rol?.nombre || "N/A"}</td>
-              <td className="border p-2">
-                {usuario.estado}
-              </td>
-              <td className="border p-2">
+            <tr key={usuario.id}>
+              <td style={tdStyle}>{usuario.nombre}</td>
+              <td style={tdStyle}>{usuario.correo}</td>
+              <td style={tdStyle}>{usuario.rol?.nombre || "N/A"}</td>
+              <td style={tdStyle}>{usuario.estado}</td>
+              <td style={tdStyle}>
                 <Button
-                  variant="outline"
                   onClick={() => cambiarEstado(usuario.id, usuario.estado)}
                 >
                   {usuario.estado === "ACTIVO" ? "Desactivar" : "Activar"}
@@ -93,5 +92,16 @@ const Usuarios = () => {
   );
 };
 
-export default Usuarios;
+const thStyle: React.CSSProperties = {
+  padding: "8px",
+  border: "1px solid #ccc",
+  textAlign: "center",
+};
 
+const tdStyle: React.CSSProperties = {
+  padding: "8px",
+  border: "1px solid #ccc",
+  textAlign: "center",
+};
+
+export default Usuarios;
