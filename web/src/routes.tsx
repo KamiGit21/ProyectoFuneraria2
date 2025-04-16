@@ -10,30 +10,37 @@ import Home from './pages/Home';
 import RegistrarCliente from './pages/RegistrarCliente';
 import PrivateRoute from './components/PrivateRoute';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 function MainRoutes() {
   const location = useLocation();
-  // Define los paths en los que no quieres mostrar el Navbar; en este caso, login
-  const hideNavbarPaths = ['/login'];
-  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
+  const hideOnPaths = ['/login'];
+  const showNavbar = !hideOnPaths.includes(location.pathname);
+  const showFooter = !hideOnPaths.includes(location.pathname);
 
   return (
-    <>
-      {showNavbar && <Navbar />} {/* Renderiza el Navbar si no estamos en /login */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/RegistrarCliente"
-          element={
-            <PrivateRoute roles={['OPERADOR', 'ADMIN']}>
-              <RegistrarCliente />
-            </PrivateRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </>
+    <div className="min-h-screen flex flex-col"> {/* Hace que el footer baje */}
+      {showNavbar && <Navbar />}
+
+      <div className="flex-grow"> {/* Empuja el footer al fondo */}
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/RegistrarCliente"
+            element={
+              <PrivateRoute roles={['OPERADOR', 'ADMIN']}>
+                <RegistrarCliente />
+              </PrivateRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+
+      {showFooter && <Footer />} {/* Footer fijo al final si no es /login */}
+    </div>
   );
 }
 
