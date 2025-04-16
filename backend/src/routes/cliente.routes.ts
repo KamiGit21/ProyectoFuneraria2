@@ -4,7 +4,7 @@ import { authMiddleware, requireRol } from '../middlewares/auth';
 
 const router = Router();
 
-// Se requiere autenticación y que el usuario tenga rol OPERADOR o ADMIN
+// Ruta para registrar cliente (solo para OPERADOR o ADMIN)
 router.post('/', authMiddleware, requireRol(['OPERADOR', 'ADMIN']), crearCliente);
 
 export default router;

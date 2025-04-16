@@ -9,7 +9,6 @@ export const obtenerUsuarios: RequestHandler = async (req, res) => {
         perfilAdmin: true,
         perfilCliente: true,
         perfilOperador: true,
-        rol: true,
       },
     });
 
@@ -47,7 +46,6 @@ export const cambiarEstadoUsuario: RequestHandler = async (req, res) => {
         perfilAdmin: true,
         perfilCliente: true,
         perfilOperador: true,
-        rol: true,
       },
     });
 
