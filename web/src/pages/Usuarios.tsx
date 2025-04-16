@@ -1,60 +1,63 @@
-
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/axiosInstance"; // en lugar de "axios"
 import Button from "../components/ui/Button";
 
-type Rol = {
-  id: string;
-  nombre: string;
-};
+type Rol = { /* ... */ };
+type Usuario = { /* ... */ };
 
-type Usuario = {
-  id: number;
-  nombre: string;
-  correo: string;
-  estado: "ACTIVO" | "INACTIVO";
-  rol: Rol;
-};
-
-const Usuarios = () => {
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+export default function Usuarios() {
+  const [usuarios, setUsuarios] = useState<Usuario[] | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     const obtenerUsuarios = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get<Usuario[]>("/usuarios", {
+        const res = await api.get<Usuario[]>("/usuarios", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUsuarios(res.data);
+        console.log("Respuesta de /usuarios:", res.data);
+        if (Array.isArray(res.data)) {
+          setUsuarios(res.data);
+        } else {
+          console.error("Respuesta no es un array:", res.data);
+          setErrorMsg("No se pudo obtener la lista de usuarios.");
+        }
       } catch (error) {
         console.error("Error al obtener usuarios:", error);
+        setErrorMsg("Hubo un error al obtener los usuarios.");
       }
     };
-
     obtenerUsuarios();
   }, []);
 
   const cambiarEstado = async (id: number, estadoActual: "ACTIVO" | "INACTIVO") => {
+    if (!usuarios) return;
     const nuevoEstado = estadoActual === "ACTIVO" ? "INACTIVO" : "ACTIVO";
 
     try {
       const token = localStorage.getItem("token");
-      await axios.patch(
-        `/usuarios/${id}`,
-        { estado: nuevoEstado },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.patch(`/usuarios/${id}`, { estado: nuevoEstado }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      setUsuarios((prev) =>
-        prev.map((user) =>
+      setUsuarios(prev =>
+        prev?.map(user =>
           user.id === id ? { ...user, estado: nuevoEstado } : user
-        )
+        ) ?? null
       );
     } catch (error) {
       console.error("Error al cambiar estado del usuario:", error);
     }
   };
+
+  if (errorMsg) {
+    return <div className="p-4 text-red-600">{errorMsg}</div>;
+  }
+
+  if (!usuarios) {
+    return <div className="p-4">Cargando usuarios...</div>;
+  }
 
   return (
     <div className="p-4">
@@ -70,19 +73,14 @@ const Usuarios = () => {
           </tr>
         </thead>
         <tbody>
-          {usuarios.map((usuario) => (
+          {usuarios.map(usuario => (
             <tr key={usuario.id} className="text-center">
               <td className="border p-2">{usuario.nombre}</td>
               <td className="border p-2">{usuario.correo}</td>
               <td className="border p-2 capitalize">{usuario.rol?.nombre || "N/A"}</td>
+              <td className="border p-2">{usuario.estado}</td>
               <td className="border p-2">
-                {usuario.estado}
-              </td>
-              <td className="border p-2">
-                <Button
-                  variant="outline"
-                  onClick={() => cambiarEstado(usuario.id, usuario.estado)}
-                >
+                <Button variant="outline" onClick={() => cambiarEstado(usuario.id, usuario.estado)}>
                   {usuario.estado === "ACTIVO" ? "Desactivar" : "Activar"}
                 </Button>
               </td>
@@ -92,6 +90,4 @@ const Usuarios = () => {
       </table>
     </div>
   );
-};
-
-export default Usuarios;
+}

@@ -20,7 +20,7 @@ import { styled } from '@mui/system';
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import Logo from '../assets/Logo_B.png'; // Asegúrate de que la ruta y nombre sean correctos
+import Logo from '../assets/Logo_B.png'; // Ajusta la ruta al logo si cambia
 
 // Colores según la paleta
 const NAV_BG = '#3A4A58';
@@ -44,7 +44,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const toggleDrawer = () => setOpen(!open);
 
-  // Estado para el menú de administración (desktop)
+  // Menú de administración (desktop)
   const [adminAnchorEl, setAdminAnchorEl] = useState<null | HTMLElement>(null);
   const handleAdminMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAdminAnchorEl(event.currentTarget);
@@ -61,7 +61,7 @@ export default function Navbar() {
     { label: 'Quiénes somos', path: '/' },
   ];
 
-  // Función para manejar iniciar/cerrar sesión
+  // Manejo de iniciar/cerrar sesión
   const handleAuth = () => {
     if (user) {
       logout?.();
@@ -90,12 +90,11 @@ export default function Navbar() {
             </Typography>
           </Box>
 
-          {/* Espaciador */}
           <Box sx={{ flexGrow: 1 }} />
 
+          {/* Versión Móvil */}
           {isMobile ? (
             <>
-              {/* Botón hamburguesa para móviles */}
               <IconButton onClick={toggleDrawer} sx={{ color: TEXT_COLOR }}>
                 <MenuIcon />
               </IconButton>
@@ -107,7 +106,7 @@ export default function Navbar() {
                         <ListItemText primary={l.label} />
                       </ListItemButton>
                     ))}
-                    {/* Menú Administración para OPERADOR o ADMIN */}
+                    {/* Menú Administración (OPERADOR o ADMIN) en móvil */}
                     {user && (user.rol === 'OPERADOR' || user.rol === 'ADMIN') && (
                       <>
                         <ListItemButton component={Link} to="/RegistrarCliente">
@@ -115,7 +114,7 @@ export default function Navbar() {
                         </ListItemButton>
                         {user.rol === 'ADMIN' && (
                           <>
-                            <ListItemButton component={Link} to="/RegistrarCliente">
+                            <ListItemButton component={Link} to="/Usuarios">
                               <ListItemText primary="Administrar usuarios" />
                             </ListItemButton>
                             <ListItemButton component={Link} to="/RegistrarCliente">
@@ -137,14 +136,16 @@ export default function Navbar() {
               </Drawer>
             </>
           ) : (
+            /* Versión Desktop */
             <>
+              {/* Enlaces generales */}
               {links.map((l) => (
                 <NavLink to={l.path} key={l.label}>
                   {l.label}
                 </NavLink>
               ))}
 
-              {/* Menú Administración (desktop) para OPERADOR o ADMIN */}
+              {/* Menú de Administración */}
               {user && (user.rol === 'OPERADOR' || user.rol === 'ADMIN') && (
                 <>
                   <Button
@@ -162,18 +163,38 @@ export default function Navbar() {
                     transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                   >
                     {[
-                      <MenuItem component={Link} to="/RegistrarCliente" onClick={handleAdminMenuClose} key="registrar">
+                      <MenuItem
+                        component={Link}
+                        to="/RegistrarCliente"
+                        onClick={handleAdminMenuClose}
+                        key="registrar"
+                      >
                         Registrar cliente
                       </MenuItem>,
                       ...(user.rol === 'ADMIN'
                         ? [
-                            <MenuItem component={Link} to="/RegistrarCliente" onClick={handleAdminMenuClose} key="usuarios">
+                            <MenuItem
+                              component={Link}
+                              to="/Usuarios"
+                              onClick={handleAdminMenuClose}
+                              key="usuarios"
+                            >
                               Administrar usuarios
                             </MenuItem>,
-                            <MenuItem component={Link} to="/RegistrarCliente" onClick={handleAdminMenuClose} key="auditoria">
+                            <MenuItem
+                              component={Link}
+                              to="/RegistrarCliente"
+                              onClick={handleAdminMenuClose}
+                              key="auditoria"
+                            >
                               Ver auditoría
                             </MenuItem>,
-                            <MenuItem component={Link} to="/RegistrarCliente" onClick={handleAdminMenuClose} key="dashboard">
+                            <MenuItem
+                              component={Link}
+                              to="/RegistrarCliente"
+                              onClick={handleAdminMenuClose}
+                              key="dashboard"
+                            >
                               Dashboard
                             </MenuItem>,
                           ]

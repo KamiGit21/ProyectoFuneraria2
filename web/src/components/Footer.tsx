@@ -20,12 +20,12 @@ const Footer: React.FC = () => {
           variant="body1"
           sx={{ color: '#3A4A58', textAlign: 'center', mb: 1 }}
         >
-          Contact us at:{" "}
+          Contactanos:{" "}
           <Link
-            href="mailto:example@example.com"
+            href="LumenGest@funeraria.com"
             sx={{ color: '#3A4A58', textDecoration: 'none', fontWeight: 600 }}
           >
-            example@example.com
+            LumenGest@funeraria.com
           </Link>
         </Typography>
         <Box
