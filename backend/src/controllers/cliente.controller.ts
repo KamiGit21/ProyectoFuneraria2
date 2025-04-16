@@ -2,25 +2,26 @@ import { RequestHandler } from 'express';
 import prisma from '../config/prismaClient';
 import bcrypt from 'bcrypt';
 
-// Con 'RequestHandler', Express sabrá que esta función es un middleware
 export const crearCliente: RequestHandler = async (req, res) => {
   const { nombres, apellidos, email, telefono, direccion, password } = req.body;
 
   if (!nombres || !apellidos || !email || !password) {
     res.status(400).json({ error: 'Campos obligatorios faltantes' });
-    return; // No uses "return res.status(...).json()", Express quiere un void
+    return;
   }
 
   try {
-    // ¿Existe email?
+    // Verifica si el email ya está registrado
     const existe = await prisma.usuario.findUnique({ where: { email } });
     if (existe) {
-      res.status(409).json({ error: 'Email ya registrado' });
+      res.status(409).json({ error: 'El email ya está registrado' });
       return;
     }
 
+    // Hashea la contraseña
     const hash = await bcrypt.hash(password, 10);
 
+    // Crea el usuario y el perfil de cliente
     const usuario = await prisma.usuario.create({
       data: {
         email,
@@ -36,6 +37,6 @@ export const crearCliente: RequestHandler = async (req, res) => {
     res.status(201).json({ message: 'Cliente creado', usuario });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error interno' });
+    res.status(500).json({ error: 'Error interno al registrar cliente' });
   }
 };

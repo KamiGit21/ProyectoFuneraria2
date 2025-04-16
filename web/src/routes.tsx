@@ -2,32 +2,53 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import Login from './pages/Login';
 import Home from './pages/Home';
 import RegistrarCliente from './pages/RegistrarCliente';
+import Usuarios from './pages/Usuarios';  // <-- Nuevo componente
 import PrivateRoute from './components/PrivateRoute';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 function MainRoutes() {
   const location = useLocation();
-  // Define los paths en los que no quieres mostrar el Navbar; en este caso, el login.
-  const hideNavbarPaths = ['/login'];
-  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
+  // Se ocultan navbar y footer en ciertos paths
+  const hideOnPaths = ['/login'];
+  const showNavbar = !hideOnPaths.includes(location.pathname);
+  const showFooter = !hideOnPaths.includes(location.pathname);
 
   return (
-    <>
-      {showNavbar && <Navbar />}  {/* Se renderiza solo si no estamos en /login */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route 
-          path="/RegistrarCliente" 
-          element={
-            <PrivateRoute roles={['OPERADOR', 'ADMIN']}>
-              <RegistrarCliente />
-            </PrivateRoute>
-          } 
-        />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </>
+    <div className="min-h-screen flex flex-col">
+      {showNavbar && <Navbar />}
+
+      <div className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/RegistrarCliente"
+            element={
+              <PrivateRoute roles={['OPERADOR', 'ADMIN']}>
+                <RegistrarCliente />
+              </PrivateRoute>
+            }
+          />
+          
+          {/* Nueva ruta para Administrar Usuarios */}
+          <Route
+            path="/Usuarios"
+            element={
+              <PrivateRoute roles={['ADMIN']}>
+                <Usuarios />
+              </PrivateRoute>
+            }
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+
+      {showFooter && <Footer />}
+    </div>
   );
 }
 
