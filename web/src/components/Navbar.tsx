@@ -20,7 +20,7 @@ import { styled } from '@mui/system';
 import { Link, useNavigate } from 'react-router-dom';
 import { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
-import Logo from '../assets/Logo B.png'; // Asegúrate de que la ruta y nombre sean correctos
+import Logo from '../assets/Logo_B.png'; // Asegúrate de que la ruta y nombre sean correctos
 
 // Colores según la paleta
 const NAV_BG = '#3A4A58';

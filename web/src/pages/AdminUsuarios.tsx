@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "@/services/axios";
-import { Button } from "@/components/ui/button";
+import axios from "axios";
+import Button from "../components/ui/Button";
 
 type Rol = {
   id: string;
