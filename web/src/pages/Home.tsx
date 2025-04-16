@@ -5,7 +5,6 @@ import {
   Title,
   SubTitle,
   Paragraph,
-  COLORS,
 } from '../styles/HomeStyles';
 
 // Importa la imagen para el banner
