@@ -1,42 +1,74 @@
+// backend/src/controllers/cliente.controller.ts
 import { RequestHandler } from 'express';
 import prisma from '../config/prismaClient';
 import bcrypt from 'bcrypt';
 
 export const crearCliente: RequestHandler = async (req, res) => {
-  const { nombres, apellidos, email, telefono, direccion, password } = req.body;
+  const {
+    nombre_usuario,
+    email,
+    password,
+    nombres,
+    apellidos,
+    telefono,
+    direccion,
+  } = req.body;
 
-  if (!nombres || !apellidos || !email || !password) {
-    res.status(400).json({ error: 'Campos obligatorios faltantes' });
-    return;
+  // 1) Campos obligatorios
+  if (!nombre_usuario || !email || !password || !nombres || !apellidos) {
+    return res.status(400).json({ error: 'Faltan campos obligatorios.' });
   }
 
   try {
-    // Verifica si el email ya está registrado
-    const existe = await prisma.usuario.findUnique({ where: { email } });
+    // 2) Verificar existencia de email o usuario
+    const existe = await prisma.usuario.findFirst({
+      where: { OR: [{ email }, { nombre_usuario }] },
+    });
     if (existe) {
-      res.status(409).json({ error: 'El email ya está registrado' });
-      return;
+      return res
+        .status(409)
+        .json({ error: 'Email o nombre de usuario ya registrados.' });
     }
 
-    // Hashea la contraseña
+    // 3) Hash de la contraseña
     const hash = await bcrypt.hash(password, 10);
 
-    // Crea el usuario y el perfil de cliente
+    // 4) Crear usuario + perfil_cliente
     const usuario = await prisma.usuario.create({
       data: {
+        nombre_usuario,
         email,
         password_hash: hash,
         rol: 'CLIENTE',
-        perfilCliente: {
+        perfil_cliente: {
           create: { nombres, apellidos, telefono, direccion },
         },
       },
-      include: { perfilCliente: true },
+      include: { perfil_cliente: true },
     });
 
-    res.status(201).json({ message: 'Cliente creado', usuario });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error interno al registrar cliente' });
+    // 5) Extraer perfil y pasar todos los BigInt a string
+    const perfil = usuario.perfil_cliente!;
+    return res.status(201).json({
+      message: 'Cliente creado',
+      usuario: {
+        id: usuario.id.toString(),
+        nombre_usuario: usuario.nombre_usuario,
+        email: usuario.email,
+        rol: usuario.rol,
+        perfil_cliente: {
+          usuario_id: perfil.usuario_id.toString(),
+          nombres: perfil.nombres,
+          apellidos: perfil.apellidos,
+          telefono: perfil.telefono,
+          direccion: perfil.direccion,
+        },
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ error: 'Error interno al registrar cliente.' });
   }
 };

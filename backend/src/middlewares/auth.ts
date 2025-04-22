@@ -1,60 +1,43 @@
-// backend/src/middlewares/auth.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
-// Si usas TypeScript, añade la propiedad 'user' en el Request
-declare global {
-  namespace Express {
-    interface Request {
-      user?: any;
-    }
-  }
+export interface JwtPayload {
+  id: string;          // id como string ⇒ sin problemas con BigInt
+  rol: 'CLIENTE' | 'OPERADOR' | 'ADMIN';
 }
 
-/**
- * Middleware de autenticación.
- * Verifica el token JWT enviado en el header Authorization (formato "Bearer token").
- * Si el token es válido, agrega req.user y llama a next().
- */
-export const authMiddleware = (req: Request, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    res.status(401).json({ error: 'No se proporcionó token de autenticación.' });
-    return;
+/* ───────── Verifica token y adjunta req.user ───────── */
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const header = req.header('Authorization');
+  if (!header?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Token requerido.' });
   }
-  const token = authHeader.split(' ')[1]; // Asume formato "Bearer <token>"
-  if (!token) {
-    res.status(401).json({ error: 'Token inválido.' });
-    return;
-  }
+
   try {
-    // Verifica el token con la clave secreta definida en .env (JWT_SECRET)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
-    req.user = decoded; // Guarda el payload del token en req.user
+    const token = header.replace('Bearer ', '');
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string,
+    ) as JwtPayload;
+    (req as any).user = decoded;           // adjunta usuario
     next();
-  } catch (error) {
+  } catch {
     res.status(401).json({ error: 'Token inválido o expirado.' });
   }
 };
 
-/**
- * Middleware para requerir roles específicos.
- * Recibe un arreglo de roles permitidos y comprueba que el rol del usuario esté entre ellos.
- * Si no, responde con error 403.
- */
-export const requireRol = (roles: string[]) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.user) {
-      res.status(401).json({ error: 'Usuario no autenticado.' });
-      return;
-    }
-    if (!roles.includes(req.user.rol)) {
-      res.status(403).json({ error: 'No tienes permisos para esta acción.' });
-      return;
-    }
+/* ───────── Solo permite ciertos roles ───────── */
+export const requireRol =
+  (roles: JwtPayload['rol'][]) =>
+  (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user as JwtPayload | undefined;
+    if (!user || !roles.includes(user.rol))
+      return res.status(403).json({ error: 'Sin permiso.' });
     next();
   };
-};

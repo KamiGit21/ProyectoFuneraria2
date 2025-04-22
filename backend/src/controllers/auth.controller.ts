@@ -1,10 +1,14 @@
-// backend/src/controllers/auth.controller.ts
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import prisma from '../config/prismaClient';
 import dotenv from 'dotenv';
 dotenv.config();
+
+interface JwtPayload {
+  id: string;   // <-- como string
+  rol: string;
+}
 
 /**
  * Permite iniciar sesión con email **o** nombre_usuario
@@ -18,7 +22,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   try {
-    // Buscar usuario por email o nombre de usuario
     const usuario = await prisma.usuario.findFirst({
       where: {
         OR: [{ email: loginField }, { nombre_usuario: loginField }],
@@ -30,35 +33,36 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Verificar contraseña
-    const passwordMatch = await bcrypt.compare(password, usuario.password_hash);
-    if (!passwordMatch) {
+    const ok = await bcrypt.compare(password, usuario.password_hash);
+    if (!ok) {
       res.status(401).json({ error: 'Credenciales inválidas.' });
       return;
     }
 
-    // Convertir el BigInt a string (o Number) antes de generar el JWT
-    const userId = usuario.id.toString();
+    // ⇒ Coerción de BigInt a string
+    const payload: JwtPayload = {
+      id: usuario.id.toString(),
+      rol: usuario.rol,
+    };
 
     const token = jwt.sign(
-      { id: userId, rol: usuario.rol },
+      payload,
       process.env.JWT_SECRET as string,
       { expiresIn: '2h' }
     );
 
-    // Devolver la respuesta con el ID ya serializado
     res.json({
       message: 'Inicio de sesión exitoso.',
       token,
       usuario: {
-        id: userId,
+        id: usuario.id.toString(),           // <-- string
         nombre_usuario: usuario.nombre_usuario,
         email: usuario.email,
         rol: usuario.rol,
       },
     });
   } catch (err) {
-    console.error('Error en login:', err);
+    console.error(err);
     res.status(500).json({ error: 'Error interno.' });
   }
 };
