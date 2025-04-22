@@ -1,29 +1,44 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import Login from './pages/Login';
-import Home from './pages/Home';
-import RegistrarCliente from './pages/RegistrarCliente';
-import Usuarios from './pages/Usuarios';  // <-- Nuevo componente
-import PrivateRoute from './components/PrivateRoute';
+import { Box } from '@mui/material';
+
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 
+import Home from './pages/Home';
+import Login from './pages/Login';
+import RegistrarCliente from './pages/RegistrarCliente';
+import Usuarios from './pages/Usuarios';
+import PrivateRoute from './components/PrivateRoute';
+
 function MainRoutes() {
   const location = useLocation();
+  const isLogin = location.pathname === '/login';
 
-  // Se ocultan navbar y footer en ciertos paths
-  const hideOnPaths = ['/login'];
-  const showNavbar = !hideOnPaths.includes(location.pathname);
-  const showFooter = !hideOnPaths.includes(location.pathname);
+  // 👉 Aplica clase CSS especial para centrar el login
+  useEffect(() => {
+    if (isLogin) {
+      document.body.classList.add('login-body');
+    } else {
+      document.body.classList.remove('login-body');
+    }
+  }, [isLogin]);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {showNavbar && <Navbar />}
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      {!isLogin && <Navbar />}
 
-      <div className="flex-grow">
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          pt: !isLogin ? '64px' : 0,
+          px: { xs: 2, md: 4 },
+        }}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-
           <Route
             path="/RegistrarCliente"
             element={
@@ -32,8 +47,6 @@ function MainRoutes() {
               </PrivateRoute>
             }
           />
-          
-          {/* Nueva ruta para Administrar Usuarios */}
           <Route
             path="/Usuarios"
             element={
@@ -42,13 +55,12 @@ function MainRoutes() {
               </PrivateRoute>
             }
           />
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </div>
+      </Box>
 
-      {showFooter && <Footer />}
-    </div>
+      {!isLogin && <Footer />}
+    </Box>
   );
 }
 

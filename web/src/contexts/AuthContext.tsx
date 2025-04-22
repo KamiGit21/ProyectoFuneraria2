@@ -1,40 +1,39 @@
-// web/src/contexts/AuthContext.tsx
-import { createContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useState, ReactNode } from 'react';
 
-export type User = { id: number; email: string; rol: string } | null;
+interface Usuario {
+  id: number;
+  nombre_usuario: string;
+  email: string;
+  rol: string;
+}
 
-interface AuthCtx {
-  user: User;
-  login: (user: User, token: string) => void;
+interface AuthContextType {
+  user: Usuario | null;
+  token: string | null;
+  login: (user: Usuario, token: string) => void;
   logout: () => void;
 }
 
-export const AuthContext = createContext<AuthCtx | null>(null);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<Usuario | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  // Al inicio se carga el usuario del localStorage (si existe)
-  useEffect(() => {
-    const storedUser = localStorage.getItem('usuario');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const login = (user: User, token: string) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('usuario', JSON.stringify(user));
-    setUser(user);
+  const login = (usr: Usuario, tk: string) => {
+    setUser(usr);
+    setToken(tk);
+    localStorage.setItem('token', tk);
   };
 
   const logout = () => {
-    localStorage.clear();
     setUser(null);
+    setToken(null);
+    localStorage.removeItem('token');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
