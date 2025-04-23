@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import RegistrarCliente from './pages/RegistrarCliente';
 import Usuarios from './pages/Usuarios';
 import PrivateRoute from './components/PrivateRoute';
+import AutoRegistro from './pages/AutoRegistro';
 
 function MainRoutes() {
   const location = useLocation();
@@ -39,6 +40,7 @@ function MainRoutes() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<AutoRegistro />} />
           <Route
             path="/RegistrarCliente"
             element={
