@@ -1,11 +1,19 @@
+// web/src/pages/Login.tsx
 import { useState, useContext } from 'react';
 import {
-  Box, Button, Container, TextField,
-  Typography, Alert, Link, InputAdornment, IconButton
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Alert,
+  Link,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { useNavigate } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { AuthContext } from '../contexts/AuthContext';
 import '../styles/login.css';
@@ -15,6 +23,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
   if (!auth) return <div>Contexto no disponible</div>;
@@ -25,7 +34,7 @@ export default function Login() {
     try {
       const { data } = await api.post('/auth/login', {
         login: loginField,
-        password
+        password,
       });
       auth.login(data.usuario, data.token);
       navigate('/');
@@ -45,7 +54,7 @@ export default function Login() {
             fontWeight: 700,
             color: '#6C4F4B',
             textAlign: 'center',
-            mb: 3
+            mb: 3,
           }}
         >
           Iniciar Sesión
@@ -56,7 +65,8 @@ export default function Login() {
 
           <TextField
             label="Email / Usuario"
-            fullWidth required
+            fullWidth
+            required
             value={loginField}
             onChange={e => setLoginField(e.target.value)}
             sx={{ mb: 2 }}
@@ -64,7 +74,8 @@ export default function Login() {
 
           <TextField
             label="Contraseña"
-            fullWidth required
+            fullWidth
+            required
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={e => setPassword(e.target.value)}
@@ -76,7 +87,7 @@ export default function Login() {
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
-              )
+              ),
             }}
           />
 
@@ -85,8 +96,22 @@ export default function Login() {
           </Button>
 
           <Box className="login-footer" mt={2} display="flex" justifyContent="space-between">
-            <Link href="#" underline="hover">Olvidé mi contraseña</Link>
-            <Link href="#" underline="hover">Registrarse</Link>
+            <Link
+              component={RouterLink}
+              to="/forgot"
+              underline="hover"
+              sx={{ textDecoration: 'none' }}
+            >
+              Olvidé mi contraseña
+            </Link>
+            <Link
+              component={RouterLink}
+              to="/autoregistro"
+              underline="hover"
+              sx={{ textDecoration: 'none' }}
+            >
+              Registrarse
+            </Link>
           </Box>
         </Box>
       </Container>

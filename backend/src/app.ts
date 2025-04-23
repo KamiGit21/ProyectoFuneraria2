@@ -1,16 +1,19 @@
-import express from 'express'
-import cors from 'cors'
-import authRoutes from './routes/auth.routes'
-import clienteRoutes from './routes/cliente.routes'
-import publicRoutes from './routes/public.routes'
+import express from 'express';
+import cors from 'cors';
+import authRoutes from './routes/auth.routes';
+import clienteRoutes from './routes/cliente.routes';
+import publicRoutes from './routes/public.routes';
 
-const app = express()
-app.use(cors())
-app.use(express.json())
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-app.use('/api/auth', authRoutes)
-app.use('/api/clientes', clienteRoutes)
-app.use('/api/public', publicRoutes)   // ← NUEVO
+app.use('/api/auth', authRoutes);
+app.use('/api/clientes', clienteRoutes);
+app.use('/api/public', publicRoutes);
+
+// 404 y error handler...
+
 
 // 404
 app.use((_req, res) =>
