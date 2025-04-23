@@ -45,9 +45,7 @@ export default function AutoRegistro() {
     return ''
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
@@ -98,11 +96,16 @@ export default function AutoRegistro() {
     }
   }
 
+  // Validación en tiempo real
+  const pwdError = validatePassword(form.password)
+  const confirmError =
+    form.confirm && form.confirm !== form.password ? 'No coincide' : ''
+
   return (
     <Container className="register-page">
       <Box className="register-card">
         <Typography className="register-title">
-          Autoregistro
+          Regístrate
         </Typography>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -111,26 +114,23 @@ export default function AutoRegistro() {
         )}
 
         {step === 'form' ? (
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-          >
+          <Box component="form" onSubmit={handleSubmit} noValidate>
             {[
-              {
-                name: 'nombre_usuario',
-                label: 'Usuario *',
-              },
+              { name: 'nombre_usuario', label: 'Usuario *' },
               { name: 'email', label: 'Correo *', type: 'email' },
               {
                 name: 'password',
                 label: 'Contraseña *',
                 type: showPwd ? 'text' : 'password',
+                error: !!pwdError,
+                helperText: pwdError,
               },
               {
                 name: 'confirm',
                 label: 'Confirmar *',
                 type: showPwd ? 'text' : 'password',
+                error: !!confirmError,
+                helperText: confirmError,
               },
               { name: 'nombres', label: 'Nombres *' },
               { name: 'apellidos', label: 'Apellidos *' },
@@ -147,16 +147,15 @@ export default function AutoRegistro() {
                 fullWidth
                 margin="normal"
                 required={f.label.endsWith('*')}
+                error={!!(f as any).error}
+                helperText={(f as any).helperText}
                 InputProps={
-                  f.name === 'password' ||
-                  f.name === 'confirm'
+                  f.name === 'password' || f.name === 'confirm'
                     ? {
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton
-                              onClick={() =>
-                                setShowPwd((v) => !v)
-                              }
+                              onClick={() => setShowPwd((v) => !v)}
                               edge="end"
                             >
                               {showPwd ? (
@@ -183,11 +182,7 @@ export default function AutoRegistro() {
             </Button>
           </Box>
         ) : (
-          <Box
-            component="form"
-            onSubmit={handleVerify}
-            noValidate
-          >
+          <Box component="form" onSubmit={handleVerify} noValidate>
             <Typography sx={{ mb: 1 }}>
               Revisa tu correo ({form.email}) e ingresa el código
             </Typography>

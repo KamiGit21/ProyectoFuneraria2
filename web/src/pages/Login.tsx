@@ -1,5 +1,4 @@
-// web/src/pages/Login.tsx
-import { useState, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   Box,
   Button,
@@ -7,7 +6,7 @@ import {
   TextField,
   Typography,
   Alert,
-  Link,
+  Link as MuiLink,
   InputAdornment,
   IconButton,
 } from '@mui/material';
@@ -23,7 +22,6 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
   if (!auth) return <div>Contexto no disponible</div>;
@@ -83,7 +81,7 @@ export default function Login() {
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(v => !v)}>
+                  <IconButton onClick={() => setShowPassword(v => !v)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
@@ -95,23 +93,13 @@ export default function Login() {
             Entrar
           </Button>
 
-          <Box className="login-footer" mt={2} display="flex" justifyContent="space-between">
-            <Link
-              component={RouterLink}
-              to="/forgot"
-              underline="hover"
-              sx={{ textDecoration: 'none' }}
-            >
+          <Box mt={2} display="flex" justifyContent="space-between" className="login-footer">
+            <MuiLink component={RouterLink} to="/forgot-password" underline="hover">
               Olvidé mi contraseña
-            </Link>
-            <Link
-              component={RouterLink}
-              to="/autoregistro"
-              underline="hover"
-              sx={{ textDecoration: 'none' }}
-            >
+            </MuiLink>
+            <MuiLink component={RouterLink} to="/autoregistro" underline="hover">
               Registrarse
-            </Link>
+            </MuiLink>
           </Box>
         </Box>
       </Container>

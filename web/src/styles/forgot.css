@@ -4,49 +4,46 @@
   --bg: #F2EFEA;
   --card: #FFFFFF;
   --primary: #6C4F4B;
-  --secondary: #B59F6B;
   --text: #3A4A58;
   --font-base: 'Inter', sans-serif;
   --font-heading: 'Playfair Display', serif;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
   font-family: var(--font-base);
   background-color: var(--bg);
 }
 
-.register-page {
+.forgot-page {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 1rem;
   min-height: 100vh;
+  padding: 2rem 1rem;
 }
 
-.register-card {
+.forgot-card {
   background: var(--card);
   padding: 2.5rem;
   border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  max-width: 480px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  max-width: 420px;
   width: 100%;
 }
 
-/* Título más grande */
-.register-title {
+.forgot-title {
   font-family: var(--font-heading);
-  font-size: 2.5rem; /* aumento de tamaño */
+  font-size: 2rem;
   color: var(--primary);
   text-align: center;
-  margin-bottom: 3.5rem;
+  margin-bottom: 1.5rem;
 }
 
-/* MUI overrides para inputs y botón */
+/* Overrides MUI */
 .MuiOutlinedInput-root {
-  background-color: #EDEDED;
+  background: #EDEDED;
   border-radius: 8px;
 }
 .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
@@ -57,8 +54,7 @@ body {
 }
 .MuiButton-contained {
   background-color: var(--primary);
-  color: #fff;
-  font-family: var(--font-heading);
+  color: white;
   text-transform: none;
 }
 .MuiButton-contained:hover {
@@ -66,7 +62,7 @@ body {
 }
 
 @media (max-width: 600px) {
-  .register-card {
+  .forgot-card {
     padding: 2rem 1rem;
   }
 }

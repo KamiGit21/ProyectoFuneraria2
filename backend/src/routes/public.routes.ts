@@ -1,12 +1,22 @@
+// src/routes/public.routes.ts
 import { Router } from 'express'
-import { registerClient, verifyCode } from '../controllers/public.controller'
+import {
+  registerClient,
+  verifyCode
+} from '../controllers/public.controller'
+import {
+  forgotPassword,
+  resetPassword
+} from '../controllers/password.controller'
 
 const router = Router()
 
-// POST /api/public/register  → crea usuario + envía código
+// registro + verificación de cuenta
 router.post('/register', registerClient)
+router.post('/verify',   verifyCode)
 
-// POST /api/public/verify    → activa cuenta
-router.post('/verify', verifyCode)
+// recuperación de contraseña
+router.post('/forgot-password', forgotPassword)
+router.post('/reset-password',  resetPassword)
 
 export default router
