@@ -33,7 +33,7 @@ El sistema moderniza la funeraria **Legacy**, permitiendo:
 - **📢 Comunicación:** Discord (canal `#daily`); urgencias por WhatsApp.
 - **🗓️ Reuniones Scrum:**  
   - *Planning* y *Retrospective*: lunes  
-  - *Daily*: todos los días a las 08:10 AM
+  - *Daily*: todos los días a las 08:10 PM
 - **🛠️ Control de versiones:**  
   - Uso de GitHub  
   - Pull Requests obligatorias  
