@@ -11,18 +11,40 @@ import {
 import bannerImage from '../assets/inicio.png';
 import logo from '../assets/Logo_B.png';
 import tarjeta from '../components/Testimoneo';
+import PackageCard from '../components/PackageCard';
 
 export default function Home() {
-  const testimonios = [
+  const testimonios = [ 
     {
       name: 'María López',
-      text: 'El servicio fue excepcional, nos ayudaron en todo momento y nos brindaron el apoyo que necesitábamos en un momento tan difícil.',
+      text: 'El servicio fue excepcional',
       date: '15 de marzo de 2023',
     },
     {
       name: 'Juan Pérez',
-      text: 'LumenGest nos ofreció un trato humano y profesional. Estamos muy agradecidos por su atención y dedicación.',
+      text: 'LumenGest nos ofreció un trato humano y profesional.',
       date: '22 de abril de 2023',
+    },
+  ];
+
+  const paquetes = [
+    {
+      title: 'Paquete Básico',
+      description: 'Incluye servicios esenciales.',
+      price: '$1,200',
+      features: ['Ataúd estándar', 'Traslado local', 'Asesoría básica'],
+    },
+    {
+      title: 'Paquete Premium',
+      description: 'Un servicio completo con detalles personalizados.',
+      price: '$3,500',
+      features: ['Ataúd de lujo', 'Traslado nacional', 'Ceremonia personalizada', 'Asesoría completa'],
+    },
+    {
+      title: 'Paquete Familiar',
+      description: 'Pensado para brindar apoyo integral a toda la familia.',
+      price: '$2,800',
+      features: ['Ataúd premium', 'Traslado regional', 'Servicio de catering', 'Apoyo psicológico'],
     },
   ];
 
@@ -163,6 +185,47 @@ export default function Home() {
           </Box>
         </Box>
       </Section>
+
+      {/* Sección de Paquetes */}
+      <Box
+        sx={{
+          width: '100%',
+          backgroundColor: '#6C4F4B',
+          color: '#F2EFEA',
+          py: 5,
+          textAlign: 'center',
+        }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h2"
+            sx={{
+            fontFamily: `'Playfair Display', serif`,
+            fontWeight: 700,
+            mb: 3,
+          }}>
+            Paquetes
+          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 4,
+              flexWrap: 'wrap',
+              mt: 4,
+            }}>
+            {paquetes.map((paquete, index) => (
+              <PackageCard
+                key={index}
+                nombre={paquete.title}
+                descripcion={paquete.description}
+                precio={paquete.price}
+                servicios={paquete.features.map((feature) => ({ nombre: feature, descripcion: '' }))}
+              />
+            ))}
+          </Box>
+        </Container>
+      </Box>
 
       {/* Secciones adicionales */}
       <Box
