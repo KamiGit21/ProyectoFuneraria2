@@ -12,6 +12,7 @@ import bannerImage from '../assets/inicio.png';
 import logo from '../assets/Logo_B.png';
 import tarjeta from '../components/Testimoneo';
 import PackageCard from '../components/PackageCard';
+import Carrusel from '../components/carrusel';
 
 export default function Home() {
   const testimonios = [ 
@@ -33,18 +34,42 @@ export default function Home() {
       description: 'Incluye servicios esenciales.',
       price: '$1,200',
       features: ['Ataúd estándar', 'Traslado local', 'Asesoría básica'],
+      image: 'https://via.placeholder.com/300x200?text=Paquete+Basico',
     },
     {
       title: 'Paquete Premium',
       description: 'Un servicio completo con detalles personalizados.',
       price: '$3,500',
-      features: ['Ataúd de lujo', 'Traslado nacional', 'Ceremonia personalizada', 'Asesoría completa'],
+      features: ['Ataúd de lujo', 'Ceremonia personalizada', 'Asesoría completa'],
+      image: 'https://via.placeholder.com/300x200?text=Paquete+Premium',
     },
     {
       title: 'Paquete Familiar',
       description: 'Pensado para brindar apoyo integral a toda la familia.',
       price: '$2,800',
-      features: ['Ataúd premium', 'Traslado regional', 'Servicio de catering', 'Apoyo psicológico'],
+      features: ['Ataúd premium', 'Traslado regional', 'Apoyo psicológico'],
+      image: 'https://via.placeholder.com/300x200?text=Paquete+Familiar',
+    },
+    {
+      title: 'Paquete Ejecutivo',
+      description: 'Servicios exclusivos para clientes exigentes.',
+      price: '$5,000',
+      features: ['Ataúd ejecutivo', 'Traslado internacional', 'Ceremonia VIP'],
+      image: 'https://via.placeholder.com/300x200?text=Paquete+Ejecutivo',
+    },
+    {
+      title: 'Paquete Económico',
+      description: 'Una opción accesible sin comprometer la calidad.',
+      price: '$900',
+      features: ['Ataúd básico', 'Traslado local', 'Asesoría económica'],
+      image: 'https://via.placeholder.com/300x200?text=Paquete+Economico',
+    },
+    {
+      title: 'Paquete Memorial',
+      description: 'Incluye servicios para honrar la memoria de manera especial.',
+      price: '$4,200',
+      features: ['Ataúd personalizado', 'Ceremonia conmemorativa', 'Libro de recuerdos'],
+      image: 'https://via.placeholder.com/300x200?text=Paquete+Memorial',
     },
   ];
 
@@ -187,48 +212,56 @@ export default function Home() {
       </Section>
 
       {/* Sección de Paquetes */}
-      <Box
-        sx={{
-          width: '100%',
-          backgroundColor: '#6C4F4B',
-          color: '#F2EFEA',
-          py: 5,
-          textAlign: 'center',
-        }}>
-        <Container maxWidth="lg">
-          <Typography
-            variant="h2"
-            sx={{
-            fontFamily: `'Playfair Display', serif`,
-            fontWeight: 700,
-            mb: 3,
-          }}>
-            Paquetes
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 4,
-              flexWrap: 'wrap',
-              mt: 4,
-            }}>
-            {paquetes.map((paquete, index) => (
-              <PackageCard
-                key={index}
-                nombre={paquete.title}
-                descripcion={paquete.description}
-                precio={paquete.price}
-                servicios={paquete.features.map((feature) => ({ nombre: feature, descripcion: '' }))}
-              />
-            ))}
-          </Box>
-        </Container>
-      </Box>
+<Box
+  sx={{
+    width: '100%',
+    backgroundColor: '#6C4F4B',
+    color: '#F2EFEA',
+    py: 5,
+    textAlign: 'center',
+    borderRadius: 2, // Redondea las esquinas del contenedor principal
+  }}
+>
+  <Container sx={{ width: '100%' }}>
+    <Typography
+      variant="h2"
+      sx={{
+        fontFamily: `'Playfair Display', serif`,
+        fontWeight: 700,
+        mb: 3,
+      }}
+    >
+      Paquetes
+    </Typography>
+    <Carrusel>
+      {paquetes.map((paquete, index) => (
+        <Box
+          key={index}
+          sx={{
+            flex: '0 0 auto',
+            minWidth: '300px',
+            borderRadius: 2, // Redondea las esquinas de cada tarjeta
+            overflow: 'hidden', // Asegura que el contenido no se desborde
+          }}
+        >
+          <PackageCard
+            nombre={paquete.title}
+            descripcion={paquete.description}
+            precio={paquete.price}
+            servicios={paquete.features.map((feature) => ({
+              nombre: feature,
+              descripcion: '',
+            }))}
+          />
+        </Box>
+      ))}
+    </Carrusel>
+  </Container>
+</Box>
 
       {/* Secciones adicionales */}
       <Box
+        id="quienes-somos"
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
