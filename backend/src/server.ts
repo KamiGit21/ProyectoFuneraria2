@@ -1,29 +1,14 @@
-import express from 'express'
-import cors from 'cors'
-import authRoutes from './routes/auth.routes'
-import clienteRoutes from './routes/cliente.routes'
-import publicRoutes from './routes/public.routes'
-
-const app = express()
-app.use(cors())
-app.use(express.json())
-
-app.use('/api/auth', authRoutes)
-app.use('/api/clientes', clienteRoutes)
-app.use('/api/public', publicRoutes)   // ← NUEVO
-
-// 404
-app.use((_req, res) =>
-  res.status(404).json({ error: 'Ruta no encontrada.' })
-)
-
-// Error handler
-app.use((err: any, _req: express.Request, res: express.Response) => {
-  console.error(err)
-  res.status(500).json({ error: 'Error del servidor.' })
-})
+import 'dotenv/config'
+import listEndpoints from 'express-list-endpoints'
+import app from './app'
 
 const PORT = process.env.PORT ?? 3001
-app.listen(PORT, () =>
+
+// Imprime rutas montadas
+console.log('🔍 RUTAS ACTIVAS:')
+console.table(listEndpoints(app))
+
+// Arranca
+app.listen(PORT, () => 
   console.log(`🚀 Backend escuchando en http://localhost:${PORT}`)
 )

@@ -1,3 +1,4 @@
+// src/pages/Login.tsx
 import React, { useState, useContext } from 'react';
 import {
   Box,
@@ -35,7 +36,15 @@ export default function Login() {
         password,
       });
       auth.login(data.usuario, data.token);
-      navigate('/');
+
+      // Redirige al path guardado o al home
+      const redirect = localStorage.getItem('afterLogin');
+      if (redirect) {
+        localStorage.removeItem('afterLogin');
+        navigate(redirect);
+      } else {
+        navigate('/');
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     }
@@ -59,14 +68,18 @@ export default function Login() {
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit} className="login-card" noValidate>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <TextField
             label="Email / Usuario"
             fullWidth
             required
             value={loginField}
-            onChange={e => setLoginField(e.target.value)}
+            onChange={(e) => setLoginField(e.target.value)}
             sx={{ mb: 2 }}
           />
 
@@ -76,12 +89,12 @@ export default function Login() {
             required
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             sx={{ mb: 2 }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(v => !v)} edge="end">
+                  <IconButton onClick={() => setShowPassword((v) => !v)} edge="end">
                     {showPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
