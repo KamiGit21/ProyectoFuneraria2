@@ -1,0 +1,56 @@
+/* web/src/styles/usuarios.css */
+
+.usuarios-container {
+  padding: 1rem;
+  font-family: 'Inter', sans-serif;
+  color: #334155;
+}
+
+.usuarios-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.usuarios-table th,
+.usuarios-table td {
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+.usuarios-table thead {
+  background-color: #f1f5f9;
+}
+
+.usuarios-table tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.usuarios-table tbody tr:hover {
+  background-color: #e2e8f0;
+}
+
+.usuarios-btn {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.875rem;
+  border: 1px solid #334155;
+  background-color: transparent;
+  color: #334155;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.usuarios-btn:hover {
+  background-color: #334155;
+  color: #ffffff;
+}

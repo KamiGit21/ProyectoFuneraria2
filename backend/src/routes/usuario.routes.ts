@@ -9,10 +9,10 @@ import { authMiddleware, requireRol } from '../middlewares/auth';
 
 const router = Router();
 
-// Rutas protegidas solo para usuarios con rol ADMIN
-router.get('/', authMiddleware, requireRol(['ADMIN']), obtenerUsuarios);
-router.post('/', authMiddleware, requireRol(['ADMIN']), crearUsuario);
-router.patch('/:id', authMiddleware, requireRol(['ADMIN']), cambiarEstadoUsuario);
-router.delete('/:id', authMiddleware, requireRol(['ADMIN']), eliminarUsuario);
+// Todas protegidas y solo ADMIN puede usarlas
+router.get('/',        authMiddleware, requireRol(['ADMIN']), obtenerUsuarios);
+router.post('/',       authMiddleware, requireRol(['ADMIN']), crearUsuario);
+router.patch('/:id',   authMiddleware, requireRol(['ADMIN']), cambiarEstadoUsuario);
+router.delete('/:id',  authMiddleware, requireRol(['ADMIN']), eliminarUsuario);
 
 export default router;
