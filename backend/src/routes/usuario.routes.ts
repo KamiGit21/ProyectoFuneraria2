@@ -1,28 +1,18 @@
-
 import { Router } from 'express';
-import { obtenerUsuarios, cambiarEstadoUsuario } from '../controllers/usuario.controller';
+import {
+  obtenerUsuarios,
+  crearUsuario,
+  cambiarEstadoUsuario,
+  eliminarUsuario,
+} from '../controllers/usuario.controller';
 import { authMiddleware, requireRol } from '../middlewares/auth';
 
 const router = Router();
 
 // Rutas protegidas solo para usuarios con rol ADMIN
 router.get('/', authMiddleware, requireRol(['ADMIN']), obtenerUsuarios);
+router.post('/', authMiddleware, requireRol(['ADMIN']), crearUsuario);
 router.patch('/:id', authMiddleware, requireRol(['ADMIN']), cambiarEstadoUsuario);
+router.delete('/:id', authMiddleware, requireRol(['ADMIN']), eliminarUsuario);
 
 export default router;
-
-
-
-=======
-import { Router } from 'express';
-import { obtenerUsuarios, cambiarEstadoUsuario } from '../controllers/usuario.controller';
-import { authMiddleware, requireRol } from '../middlewares/auth';
-
-const router = Router();
-
-// Se requiere autenticación y rol ADMIN para ver y editar usuarios
-router.get('/', authMiddleware, requireRol(['ADMIN']), obtenerUsuarios);
-router.patch('/:id', authMiddleware, requireRol(['ADMIN']), cambiarEstadoUsuario);
-
-export default router;
-

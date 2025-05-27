@@ -11,6 +11,7 @@ import { Box } from '@mui/material';
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import PrivateRoute from './components/PrivateRoute';
 
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -18,7 +19,6 @@ import Autoregistro from './pages/AutoRegistro';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 
-// Clientes / Usuarios
 import RegistrarCliente from './pages/RegistrarCliente';
 import Usuarios from './pages/Usuarios';
 
@@ -39,21 +39,32 @@ import ImportCsv from './pages/Importacion/ImportCsv';
 // Checkout (carrito multi-servicio)
 import Checkout from './pages/Checkout';
 
-import PrivateRoute from './components/PrivateRoute';
+// Nuevas páginas de Admin (from main)
+import AdminPanel from './pages/AdminPanel';
+import Dashboard from './pages/Dashboard';
+import Auditorias from './pages/Auditorias';
 
 function MainRoutes() {
   const location = useLocation();
   const isLogin = ['/login', '/autoregistro'].includes(location.pathname);
 
   useEffect(() => {
-    document.body.classList.toggle('login-body', isLogin);
+    if (isLogin) document.body.classList.add('login-body');
+    else document.body.classList.remove('login-body');
   }, [isLogin]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {!isLogin && <Navbar />}
 
-      <Box component="main" sx={{ flexGrow: 1, pt: !isLogin ? '64px' : 0, px: 2 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          pt: !isLogin ? '64px' : 0,
+          px: { xs: 2, md: 4 },
+        }}
+      >
         <Routes>
           {/* — Públicas — */}
           <Route path="/" element={<Home />} />
@@ -111,7 +122,6 @@ function MainRoutes() {
           />
 
           {/* — Órdenes individual (CLIENTE/OPERADOR) — */}
-
           <Route
             path="/ordenes/seguimiento/:id"
             element={
@@ -157,6 +167,32 @@ function MainRoutes() {
             element={
               <PrivateRoute roles={['ADMIN']}>
                 <Usuarios />
+              </PrivateRoute>
+            }
+          />
+
+          {/* — Panel de administración y dashboards — */}
+          <Route
+            path="/AdminPanel"
+            element={
+              <PrivateRoute roles={['ADMIN']}>
+                <AdminPanel />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute roles={['ADMIN', 'OPERADOR']}>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/Auditorias"
+            element={
+              <PrivateRoute roles={['ADMIN']}>
+                <Auditorias />
               </PrivateRoute>
             }
           />

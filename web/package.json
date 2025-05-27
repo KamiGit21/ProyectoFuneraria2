@@ -16,17 +16,29 @@
     "@fontsource/playfair-display": "^5.2.5",
     "@fontsource/source-sans-pro": "^5.2.5",
     "@mui/icons-material": "^7.0.2",
+<<<<<<< HEAD
     "@mui/material": "^7.1.0",
     "axios": "^1.8.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.56.3",
     "react-router-dom": "^7.6.0"
+=======
+    "@mui/material": "^7.0.2",
+    "axios": "^1.8.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.5.2"
+>>>>>>> main
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/react": "^19.1.2",
+<<<<<<< HEAD
     "@types/react-dom": "^19.0.4",
+=======
+    "@types/react-dom": "^19.1.2",
+>>>>>>> main
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
