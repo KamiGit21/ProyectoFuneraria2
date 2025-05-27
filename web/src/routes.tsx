@@ -189,7 +189,7 @@ function MainRoutes() {
             }
           />
           <Route
-            path="/Auditorias"
+            path="/Auditoria"
             element={
               <PrivateRoute roles={['ADMIN']}>
                 <Auditorias />

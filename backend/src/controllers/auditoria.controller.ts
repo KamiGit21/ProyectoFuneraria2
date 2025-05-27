@@ -1,18 +1,24 @@
+// src/controllers/auditoria.controller.ts
 import { Request, Response } from 'express';
 import prisma from '../config/prismaClient';
 
 export const getAuditLogs = async (req: Request, res: Response) => {
   try {
     const { user, tabla, date, page = '1', limit = '10' } = req.query;
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
     const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
-    if (user) where.usuario = { nombre_usuario: { contains: user as string } };
-    if (tabla) where.tabla = tabla as string;
-    if (date) where.realizado_en = { gte: new Date(date as string), lte: new Date(date as string + 'T23:59:59.999Z') };
+    if (user)  where.usuario = { nombre_usuario: { contains: user as string } };
+    if (tabla) where.tabla   = tabla as string;
+    if (date) {
+      const from = new Date(date as string);
+      const to   = new Date((date as string) + 'T23:59:59.999Z');
+      where.realizado_en = { gte: from, lte: to };
+    }
 
+    // Ahora incluimos todos los campos que quieres ver
     const [logs, total] = await Promise.all([
       prisma.auditoria.findMany({
         where,
@@ -24,18 +30,25 @@ export const getAuditLogs = async (req: Request, res: Response) => {
           usuario_id: true,
           tabla: true,
           operacion: true,
+          registro_id: true,
+          antes: true,
+          despues: true,
           realizado_en: true,
           usuario: { select: { nombre_usuario: true } },
-        },
+        }
       }),
       prisma.auditoria.count({ where }),
     ]);
 
+    // Mapeamos a un JSON plano
     const formattedLogs = logs.map(log => ({
-      id: log.id,
-      user: log.usuario?.nombre_usuario || 'Sistema',
-      tabla: log.tabla,
-      operacion: log.operacion,
+      id:          Number(log.id),                         // DataGrid exige number
+      user:        log.usuario?.nombre_usuario ?? 'Sistema',
+      tabla:       log.tabla,
+      operacion:   log.operacion,
+      registroId:  Number(log.registro_id),
+      antes:       log.antes   ?? {},
+      despues:     log.despues ?? {},
       realizado_en: log.realizado_en.toISOString(),
     }));
 

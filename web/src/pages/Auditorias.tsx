@@ -1,106 +1,119 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import {
-  Container,
-  Typography,
-  TextField,
-  MenuItem,
-  Select,
-  Alert,
-  Box,
-  InputLabel,
-  FormControl,
-  CircularProgress,
+  Container, Typography, TextField, MenuItem, Select, Alert,
+  Box, InputLabel, FormControl, CircularProgress
 } from '@mui/material';
 import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
-import { format, isValid } from 'date-fns';
+import { format, isValid, parseISO } from 'date-fns';
 import { debounce } from 'lodash';
 import api from '../api/axiosInstance';
 import { AuthContext } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import "../styles/auditoria.css";
 
 interface AuditLog {
   id: number;
   user: string;
   tabla: string;
   operacion: string;
+  registroId: number;
+  antes: Record<string, any>;
+  despues: Record<string, any>;
   realizado_en: string;
 }
 
-interface User {
-  id: number;
-  nombre_usuario: string;
-}
+const tablaMap: Record<string,string> = {
+  servicio: 'Servicios',
+  obituario: 'Obituarios',
+  usuario: 'Usuarios',
+  orden: 'Órdenes',
+  difunto: 'Difuntos',
+  condolencia: 'Condolencias',
+};
+
+const operacionMap: Record<string,string> = {
+  INSERT: 'Creado',
+  UPDATE: 'Editado',
+  DELETE: 'Eliminado',
+};
+
+// Helper para extraer sólo las diferencias entre dos objetos
+const diffState = (antes: Record<string, any>, despues: Record<string, any>) =>
+  Object.keys({ ...antes, ...despues })
+    .filter(key => antes[key] !== despues[key])
+    .map(key => {
+      const label = key.charAt(0).toUpperCase() + key.slice(1);
+      const from = antes[key] ?? '—';
+      const to   = despues[key] ?? '—';
+      return `${label}: ${from} → ${to}`;
+    });
 
 const Auditorias: React.FC = () => {
-  const { user } = useContext(AuthContext) || {};
+  const { user } = useContext(AuthContext) ?? {};
   const navigate = useNavigate();
-  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [filterUser, setFilterUser] = useState<string>('');
-  const [filterTabla, setFilterTabla] = useState<string>('');
-  const [filterDate, setFilterDate] = useState<string>('');
-  const [dateError, setDateError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [totalLogs, setTotalLogs] = useState<number>(0);
-  const [error, setError] = useState<string>('');
+
+  const [auditLogs, setAuditLogs]     = useState<AuditLog[]>([]);
+  const [filterTabla, setFilterTabla] = useState('');
+  const [filterDate, setFilterDate]   = useState('');
+  const [dateError, setDateError]     = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [totalLogs, setTotalLogs]     = useState(0);
+  const [error, setError]             = useState('');
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 10 });
 
-  const tablaMap: { [key: string]: string } = {
-    servicio: 'Servicios',
-    obituario: 'Obituarios',
-    usuario: 'Usuarios',
-    orden: 'Órdenes',
-    difunto: 'Difuntos',
-    condolencia: 'Condolencias',
-    // Add other tables as needed
-  };
-
-  const operacionMap: { [key: string]: string } = {
-    INSERT: 'Creado',
-    UPDATE: 'Editado',
-    DELETE: 'Eliminado',
-  };
-
-  const tablas = Object.keys(tablaMap);
-
-  const columns: GridColDef[] = [
-    { field: 'user', headerName: 'Usuario', width: 200 },
+  const columnas: GridColDef[] = [
+    { field: 'user', headerName: 'Usuario', width: 180 },
     {
       field: 'realizado_en',
       headerName: 'Fecha y Hora',
-      width: 200,
-      valueFormatter: ({ value }) => format(new Date(value), 'dd/MM/yyyy HH:mm:ss'),
+      width: 180,
+      renderCell: ({ value }) => {
+        if (!value) return '';
+        const dt = isValid(parseISO(value)) ? parseISO(value) : new Date(value);
+        return isValid(dt) ? format(dt, 'dd/MM/yyyy HH:mm:ss') : '';
+      }
     },
     {
       field: 'tabla',
       headerName: 'Módulo',
-      width: 150,
-      valueGetter: ({ value }) => tablaMap[value] || value,
+      width: 140,
+      renderCell: ({ value }) => tablaMap[value as string] ?? (value as string) ?? ''
     },
     {
       field: 'operacion',
       headerName: 'Acción',
-      width: 150,
-      valueGetter: ({ value }) => operacionMap[value] || value,
+      width: 130,
+      renderCell: ({ value }) => operacionMap[value as string] ?? (value as string) ?? ''
+    },
+    { field: 'registroId', headerName: 'ID Registro', width: 110 },
+
+    // Columna que muestra sólo los campos que cambiaron
+    {
+      field: 'cambios',
+      headerName: 'Cambios',
+      flex: 1,
+      renderCell: ({ row }) => {
+        const diffs = diffState(row.antes, row.despues);
+        if (diffs.length === 0) return '';
+        return (
+          <Box
+            component="pre"
+            sx={{
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              fontFamily: 'inherit',
+              margin: 0,
+            }}
+          >
+            {diffs.join('\n')}
+          </Box>
+        );
+      }
     },
   ];
 
-  const fetchUsers = useCallback(async () => {
-    if (!user || user.rol !== 'ADMIN') return;
-    try {
-      const response = await api.get('/usuarios');
-      setUsers(response.data || []);
-    } catch (error: any) {
-      const errMsg = error.response?.data?.error || 'Error al cargar los usuarios';
-      setError(errMsg);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        navigate('/login');
-      }
-    }
-  }, [user, navigate]);
-
   const fetchLogs = useCallback(async () => {
-    if (!user || user.rol !== 'ADMIN') {
+    if (user?.rol !== 'ADMIN') {
       setError('Acceso no autorizado');
       navigate('/login');
       return;
@@ -108,127 +121,108 @@ const Auditorias: React.FC = () => {
     setLoading(true);
     try {
       const params: any = {
-        page: paginationModel.page + 1,
+        page:  paginationModel.page + 1,
         limit: paginationModel.pageSize,
       };
-      if (filterUser) params.user = filterUser;
       if (filterTabla) params.tabla = filterTabla;
-      if (filterDate) params.date = filterDate;
+      if (filterDate)  params.date  = filterDate;
 
-      const response = await api.get('/auditoria', { params });
-      setAuditLogs(response.data.logs || []);
-      setTotalLogs(response.data.total || 0);
-    } catch (error: any) {
-      const errMsg = error.response?.data?.error || 'Error al cargar los registros de auditoría';
-      setError(errMsg);
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        navigate('/login');
-      }
+      const { data } = await api.get('/auditoria', { params });
+      setAuditLogs(data.logs);
+      setTotalLogs(data.total);
+    } catch (e: any) {
+      setError(e.response?.data?.error || 'Error cargando auditorías');
+      if ([401,403].includes(e.response?.status)) navigate('/login');
     } finally {
       setLoading(false);
     }
-  }, [user, filterUser, filterTabla, filterDate, paginationModel, navigate]);
+  }, [user, filterTabla, filterDate, paginationModel, navigate]);
 
-  const debouncedFetchLogs = useCallback(debounce(fetchLogs, 300), [fetchLogs]);
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setFilterDate(value);
-    if (value && !isValid(new Date(value))) {
-      setDateError('Fecha inválida');
-    } else {
-      setDateError('');
-      debouncedFetchLogs();
-    }
-  };
+  const debouncedFetch = useCallback(debounce(fetchLogs, 200), [fetchLogs]);
 
   useEffect(() => {
-    fetchUsers();
-    fetchLogs();
-  }, [fetchUsers, fetchLogs]);
+    debouncedFetch();
+    return debouncedFetch.cancel;
+  }, [
+    filterTabla,
+    filterDate,
+    paginationModel.page,
+    paginationModel.pageSize,
+    debouncedFetch
+  ]);
+
+  const onTablaChange = (e: any) => {
+    setFilterTabla(e.target.value);
+    setPaginationModel(p => ({ ...p, page: 0 }));
+  };
+  const onDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setFilterDate(v);
+    setPaginationModel(p => ({ ...p, page: 0 }));
+    if (v && !isValid(new Date(v))) setDateError('Fecha inválida');
+    else setDateError('');
+  };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 8, mb: 4 }}>
+    <Container
+      maxWidth="lg"
+      sx={{ mt:8, mb:4 }}
+      className="audit-page"
+    >
       <Typography
         variant="h4"
         gutterBottom
-        sx={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#3A4A58' }}
+        className="page-title"
+        sx={{ fontFamily:"'Playfair Display'", color:'#3A4A58' }}
       >
         Auditorías
       </Typography>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
-      <Box display="flex" gap={2} mb={2} flexWrap="wrap">
-        <FormControl sx={{ flex: '1 1 300px' }}>
-          <InputLabel sx={{ fontFamily: "'Source Sans Pro', sans-serif" }}>
-            Filtrar por usuario
-          </InputLabel>
-          <Select
-            value={filterUser}
-            onChange={(e) => {
-              setFilterUser(e.target.value);
-              debouncedFetchLogs();
-            }}
-            variant="outlined"
-            sx={{ fontFamily: "'Source Sans Pro', sans-serif" }}
-          >
-            <MenuItem value="">Todos</MenuItem>
-            {users.map((u) => (
-              <MenuItem key={u.id} value={u.nombre_usuario}>
-                {u.nombre_usuario}
+
+      {error && <Alert severity="error" onClose={() => setError('')}>{error}</Alert>}
+
+      <Box
+        className="audit-filters"
+        display="flex" gap={2} mb={2} flexWrap="wrap"
+      >
+        <FormControl sx={{ flex:'1 1 300px' }}>
+          <InputLabel>Filtrar por módulo</InputLabel>
+          <Select value={filterTabla} onChange={onTablaChange}>
+            <MenuItem value=''>Todos</MenuItem>
+            {Object.keys(tablaMap).map(t => (
+              <MenuItem key={t} value={t}>
+                {tablaMap[t]}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-        <FormControl sx={{ flex: '1 1 300px' }}>
-          <InputLabel sx={{ fontFamily: "'Source Sans Pro', sans-serif" }}>
-            Filtrar por módulo
-          </InputLabel>
-          <Select
-            value={filterTabla}
-            onChange={(e) => {
-              setFilterTabla(e.target.value);
-              debouncedFetchLogs();
-            }}
-            variant="outlined"
-            sx={{ fontFamily: "'Source Sans Pro', sans-serif" }}
-          >
-            <MenuItem value="">Todos</MenuItem>
-            {tablas.map((tabla) => (
-              <MenuItem key={tabla} value={tabla}>
-                {tablaMap[tabla]}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+
         <TextField
           label="Filtrar por fecha"
           type="date"
-          variant="outlined"
           value={filterDate}
-          onChange={handleDateChange}
+          onChange={onDateChange}
           error={!!dateError}
           helperText={dateError}
           InputLabelProps={{ shrink: true }}
-          sx={{ flex: '1 1 300px', fontFamily: "'Source Sans Pro', sans-serif" }}
+          sx={{ flex:'1 1 300px' }}
         />
       </Box>
-      <Box sx={{ height: 600, width: '100%' }}>
-        {loading && <CircularProgress sx={{ display: 'block', mx: 'auto', my: 2 }} />}
+
+      <Box
+        className="audit-table-container"
+        sx={{ height:600, width:'100%' }}
+      >
+        {loading && <CircularProgress sx={{ display:'block', mx:'auto', my:2 }} />}
         <DataGrid
           rows={auditLogs}
-          columns={columns}
+          columns={columnas}
           paginationMode="server"
           rowCount={totalLogs}
           loading={loading}
-          pageSizeOptions={[10, 25, 50]}
+          pageSizeOptions={[10,25,50]}
           paginationModel={paginationModel}
           onPaginationModelChange={setPaginationModel}
           disableRowSelectionOnClick
-          sx={{ fontFamily: "'Source Sans Pro', sans-serif", backgroundColor: '#FFFFFF' }}
         />
       </Box>
     </Container>
