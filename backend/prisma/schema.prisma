@@ -50,9 +50,15 @@ model difunto {
 
 model email_verificacion {
   usuario_id BigInt   @id
+<<<<<<< HEAD
+  creado_en  DateTime @default(now()) @db.Timestamptz(6)
+  expiracion DateTime @default(dbgenerated("(now() + '1 day'::interval)")) @db.Timestamptz(6)
+  token      String   @db.VarChar(36)
+=======
   token      String   @db.VarChar(6)
   creado_en  DateTime @default(now()) @db.Timestamptz(6)
   expiracion DateTime @default(dbgenerated("(now() + '1 day'::interval)")) @db.Timestamptz(6)
+>>>>>>> main
   usuario    usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([token], map: "idx_email_verificacion_token")
@@ -169,7 +175,11 @@ model pago {
 model password_reset {
   id         BigInt   @id @default(autoincrement())
   usuario_id BigInt
+<<<<<<< HEAD
+  token      String   @db.VarChar(36)
+=======
   token      String   @db.VarChar(16)
+>>>>>>> main
   creado_en  DateTime @default(now()) @db.Timestamptz(6)
   expiracion DateTime @default(dbgenerated("(now() + '01:00:00'::interval)")) @db.Timestamptz(6)
   usuario    usuario  @relation(fields: [usuario_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -218,7 +228,13 @@ model servicio {
   activo         Boolean         @default(true)
   creado_en      DateTime        @default(now()) @db.Timestamptz(6)
   actualizado_en DateTime        @default(now()) @db.Timestamptz(6)
+<<<<<<< HEAD
+  categoria_id   Int?
   orden_detalle  orden_detalle[]
+  categoria      categoria?      @relation(fields: [categoria_id], references: [id], onUpdate: NoAction, map: "fk_servicio_categoria")
+=======
+  orden_detalle  orden_detalle[]
+>>>>>>> main
 
   @@index([nombre], map: "idx_servicio_nombre")
 }
@@ -247,3 +263,11 @@ model usuario {
   perfil_operador                  perfil_operador?
 }
 
+<<<<<<< HEAD
+model categoria {
+  id       Int        @id @default(autoincrement())
+  nombre   String     @unique @db.VarChar(100)
+  servicio servicio[]
+}
+=======
+>>>>>>> main

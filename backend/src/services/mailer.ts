@@ -12,7 +12,6 @@ let transporter: Transporter;
 async function getTransporter(): Promise<Transporter> {
   if (transporter) return transporter;
 
-  // Si tienes SMTP real configurado en .env, úsalo:
   const host = process.env.SMTP_HOST || undefined;
   const port = process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : undefined;
   const user = process.env.SMTP_USER;
@@ -22,20 +21,17 @@ async function getTransporter(): Promise<Transporter> {
     transporter = nodemailer.createTransport({
       host,
       port,
-      secure: port === 465,      // sólo TLS en puerto 465
+      secure: port === 465,
       auth: { user, pass },
     });
   } else {
-    // Si no están tus credenciales reales, cae en Ethereal (para desarrollo)
+    // Ethereal para desarrollo
     const test = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
       host: test.smtp.host,
       port: test.smtp.port,
       secure: test.smtp.secure,
-      auth: {
-        user: test.user,
-        pass: test.pass,
-      },
+      auth: { user: test.user, pass: test.pass },
     });
     console.log('✉️ Ethereal credentials:', test.user, test.pass);
   }
@@ -72,7 +68,6 @@ export async function sendVerificationEmail(to: string, code: string) {
  */
 export async function sendPasswordResetEmail(email: string, token: string) {
   const tr = await getTransporter();
-  // Asegúrate de tener FRONTEND_URL en tu .env, e.g. http://localhost:5173
   const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
   const resetLink = `${frontend}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
 
@@ -86,4 +81,21 @@ export async function sendPasswordResetEmail(email: string, token: string) {
       `<p>Si no solicitaste esto, ignora este correo.</p>`,
   });
   console.log('🔑 Password reset Preview URL:', nodemailer.getTestMessageUrl(info));
+}
+
+/**
+ * Envía un correo de confirmación de nueva orden.
+ */
+export async function sendOrderConfirmation(toEmail: string, orderId: bigint) {
+  const tr = await getTransporter();
+  const info = await tr.sendMail({
+    from: `"LumenGest" <${process.env.SMTP_USER || 'no-reply@lumengest.com'}>`,
+    to: toEmail,
+    subject: 'Confirmación de Orden de Servicio Funerario',
+    html:
+      `<p>Su orden con ID <strong>#${orderId.toString()}</strong> ha sido creada correctamente.</p>` +
+      `<p>Estado actual: <strong>PENDIENTE</strong>.</p>` +
+      `<p>Le notificaremos por correo cada vez que su trámite cambie de estado.</p>`,
+  });
+  console.log('✉️ Order confirmation Preview URL:', nodemailer.getTestMessageUrl(info));
 }

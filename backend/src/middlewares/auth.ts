@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export interface JwtPayload {
-  id: string;          // id como string ⇒ sin problemas con BigInt
+  id: string; // ID como string, evitando problemas con BigInt
   rol: 'CLIENTE' | 'OPERADOR' | 'ADMIN';
 }
 
@@ -13,7 +13,7 @@ export interface JwtPayload {
 export const authMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const header = req.header('Authorization');
   if (!header?.startsWith('Bearer ')) {
@@ -22,16 +22,13 @@ export const authMiddleware = (
 
   try {
     const token = header.replace('Bearer ', '');
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET as string,
-    ) as JwtPayload;
-    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
+
     // Adjuntar el usuario decodificado al objeto req
-    (req as any).user = decoded;           // adjunta usuario
+    (req as any).user = decoded;
     next();
   } catch (error) {
-    console.error(error);
+    console.error('Error al verificar el token:', error);
     res.status(401).json({ error: 'Token inválido o expirado.' });
   }
 };
@@ -41,6 +38,7 @@ export const requireRol =
   (roles: JwtPayload['rol'][]) =>
   (req: Request, res: Response, next: NextFunction) => {
     const user = (req as any).user as JwtPayload | undefined;
+
     if (!user) {
       return res.status(401).json({ error: 'No autenticado.' });
     }
