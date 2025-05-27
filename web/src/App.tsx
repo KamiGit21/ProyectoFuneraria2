@@ -4,10 +4,6 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import Footer from './components/Footer'
 
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 function App() {
   const [count, setCount] = useState(0)
 
