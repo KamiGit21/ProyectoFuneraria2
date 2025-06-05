@@ -14,6 +14,7 @@ import serviceRoutes from './routes/service.routes';
 import orderRoutes from './routes/order.routes';
 import importRoutes from './routes/import.routes';
 import categoriaRoutes from './routes/categoria.routes';
+import dashboardRoutes from './routes/dashboard.routes'; // Dashboard metrics endpoint
 // import adminRoutes from './routes/admin.routes';
 
 const app = express();
@@ -43,6 +44,7 @@ app.use('/api/servicios', serviceRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/ordenes', orderRoutes);
 app.use('/api/importaciones', importRoutes);
+app.use('/api/dashboard', dashboardRoutes); // Mount dashboard routes
 // app.use('/api/usuarios', adminRoutes);
 
 console.log('✅ Endpoints DESPUÉS de montar rutas:');
@@ -57,6 +59,5 @@ app.use((err: any, _req: express.Request, res: express.Response) => {
   console.error(err);
   res.status(500).json({ error: 'Error del servidor.' });
 });
-
 
 export default app;

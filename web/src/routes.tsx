@@ -1,12 +1,6 @@
 // src/routes.tsx
 import React, { useEffect } from 'react';
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Box } from '@mui/material';
 
 import Navbar from './components/Navbar';
@@ -18,28 +12,17 @@ import Login from './pages/Login';
 import Autoregistro from './pages/AutoRegistro';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-
 import RegistrarCliente from './pages/RegistrarCliente';
 import Usuarios from './pages/Usuarios';
-
-// Servicios & Categorías
 import CategoriasLanding from './pages/Servicios/CategoriasLanding';
 import CatalogoServicios from './pages/Servicios/CatalogoServicios';
 import AdminCategorias from './pages/Servicios/AdminCategorias';
 import FormCategoria from './pages/Servicios/FormCategoria';
 import FormServicio from './pages/Servicios/FormServicio';
-
-// Órdenes
 import WizardContratacion from './pages/Ordenes/WizardContratacion';
 import SeguimientoOrden from './pages/Ordenes/SeguimientoOrden';
-
-// Importación CSV
 import ImportCsv from './pages/Importacion/ImportCsv';
-
-// Checkout (carrito multi-servicio)
 import Checkout from './pages/Checkout';
-
-// Nuevas páginas de Admin (from main)
 import AdminPanel from './pages/AdminPanel';
 import Dashboard from './pages/Dashboard';
 import Auditorias from './pages/Auditorias';
@@ -56,28 +39,20 @@ function MainRoutes() {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {!isLogin && <Navbar />}
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          pt: !isLogin ? '64px' : 0,
-          px: { xs: 2, md: 4 },
-        }}
-      >
+      <Box component="main" sx={{ flexGrow: 1, pt: !isLogin ? '64px' : 0, px: { xs: 2, md: 4 } }}>
         <Routes>
-          {/* — Públicas — */}
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/autoregistro" element={<Autoregistro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* — Catálogo de Categorías & Servicios — */}
+          {/* Services & Categories */}
           <Route path="/servicios" element={<CategoriasLanding />} />
           <Route path="/servicios/cat/:id" element={<CatalogoServicios />} />
 
-          {/* — ABM Servicios (ADMIN) — */}
+          {/* Admin Services */}
           <Route
             path="/servicios/nuevo"
             element={
@@ -95,7 +70,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — ABM Categorías (ADMIN) — */}
+          {/* Admin Categories */}
           <Route
             path="/servicios/categorias"
             element={
@@ -121,7 +96,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — Órdenes individual (CLIENTE/OPERADOR) — */}
+          {/* Orders */}
           <Route
             path="/ordenes/seguimiento/:id"
             element={
@@ -131,7 +106,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — Checkout Multicarrito (CLIENTE/OPERADOR) — */}
+          {/* Checkout */}
           <Route
             path="/checkout"
             element={
@@ -141,7 +116,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — Importación CSV (ADMIN) — */}
+          {/* CSV Import */}
           <Route
             path="/importar"
             element={
@@ -151,7 +126,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — Gestión de clientes (OPERADOR / ADMIN) — */}
+          {/* Client Management */}
           <Route
             path="/RegistrarCliente"
             element={
@@ -161,7 +136,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — Gestión de usuarios (ADMIN) — */}
+          {/* User Management */}
           <Route
             path="/Usuarios"
             element={
@@ -171,7 +146,7 @@ function MainRoutes() {
             }
           />
 
-          {/* — Panel de administración y dashboards — */}
+          {/* Admin Panel & Dashboards */}
           <Route
             path="/AdminPanel"
             element={
@@ -181,7 +156,7 @@ function MainRoutes() {
             }
           />
           <Route
-            path="/dashboard"
+            path="/dashboard/*"
             element={
               <PrivateRoute roles={['ADMIN', 'OPERADOR']}>
                 <Dashboard />
@@ -197,11 +172,10 @@ function MainRoutes() {
             }
           />
 
-          {/* — Catch-all — */}
+          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Box>
-
       {!isLogin && <Footer />}
     </Box>
   );
