@@ -1,24 +1,87 @@
-import { CategoriaRepository } from './categoria.repository';
-import { ICategoryCreate, ICategoryUpdate } from '../models/categoria.dto';
+// backend/src/services/categoria.service.ts
+
+import { PrismaClient } from '@prisma/client';
+import { CategoryCreateDtoType, CategoryUpdateDtoType } from '../models/categoria.dto';
+
+const prisma = new PrismaClient();
 
 export class CategoriaService {
-  static list() {
-    return CategoriaRepository.list();
+  /** Devuelve todas las categorías, incluyendo imagenUrl */
+  static async list() {
+    return prisma.categoria.findMany({
+      select: {
+        id: true,
+        nombre: true,
+        imagenUrl: true,
+      },
+    });
   }
-  static getById(id: number) {
-    return CategoriaRepository.findById(id);
+
+  /** Devuelve una categoría por ID, junto con sus servicios */
+  static async getById(id: number) {
+    return prisma.categoria.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nombre: true,
+        imagenUrl: true,
+        servicio: true, // incluye los servicios relacionados
+      },
+    });
   }
-  static create(dto: ICategoryCreate) {
-    return CategoriaRepository.create(dto);
+
+  /** Crea una nueva categoría, recibiendo nombre e imagenUrl (opcional),
+   *  y devuelve solo id, nombre e imagenUrl */
+  static async create(dto: CategoryCreateDtoType) {
+    const nuevaCat = await prisma.categoria.create({
+      data: {
+        nombre: dto.nombre,
+        imagenUrl: dto.imagenUrl, // puede venir undefined
+      },
+      select: {
+        id: true,
+        nombre: true,
+        imagenUrl: true,
+      },
+    });
+    return nuevaCat;
   }
-  static update(id: number, dto: ICategoryUpdate) {
-    return CategoriaRepository.update(id, dto);
+
+  /** Actualiza nombre e imagenUrl de una categoría existente,
+   *  y devuelve solo id, nombre e imagenUrl */
+  static async update(id: number, dto: CategoryUpdateDtoType) {
+    const catActualizada = await prisma.categoria.update({
+      where: { id },
+      data: {
+        ...(dto.nombre !== undefined && { nombre: dto.nombre }),
+        ...(dto.imagenUrl !== undefined && { imagenUrl: dto.imagenUrl }),
+      },
+      select: {
+        id: true,
+        nombre: true,
+        imagenUrl: true,
+      },
+    });
+    return catActualizada;
   }
-  static delete(id: number) {
-    return CategoriaRepository.remove(id);
+
+  /** Elimina una categoría por ID */
+  static async delete(id: number) {
+    return prisma.categoria.delete({
+      where: { id },
+    });
   }
-  static getServicios(id: number) {
-    // ya lo tienes: find servicios por categoria
-    return prisma.servicio.findMany({ where: { categoria_id: id } });
+
+  /** Lista todos los servicios que pertenezcan a cierta categoría */
+  static async getServicios(id: number) {
+    return prisma.servicio.findMany({
+      where: { categoriaId: id },
+      select: {
+        id: true,
+        nombre: true,
+        precio: true,
+        // …otros campos que necesites
+      },
+    });
   }
 }

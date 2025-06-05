@@ -219,11 +219,13 @@ model servicio {
   creado_en      DateTime        @default(now()) @db.Timestamptz(6)
   actualizado_en DateTime        @default(now()) @db.Timestamptz(6)
   categoria_id   Int?
+  imagenUrl      String?         @db.VarChar(255)
   orden_detalle  orden_detalle[]
   categoria      categoria?      @relation(fields: [categoria_id], references: [id], onUpdate: NoAction, map: "fk_servicio_categoria")
 
   @@index([nombre], map: "idx_servicio_nombre")
 }
+
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model usuario {
@@ -250,7 +252,8 @@ model usuario {
 }
 
 model categoria {
-  id       Int        @id @default(autoincrement())
-  nombre   String     @unique @db.VarChar(100)
-  servicio servicio[]
+  id        Int        @id @default(autoincrement())
+  nombre    String     @unique @db.VarChar(100)
+  imagenUrl String?    @db.VarChar(255)    // ← Nuevo campo para la URL de la imagen
+  servicio  servicio[]
 }

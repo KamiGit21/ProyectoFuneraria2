@@ -1,43 +1,93 @@
-import { ServiceRepository } from './service.repository';
-import type { IServiceCreate, IServiceUpdate, IServiceFilter } from './service.dto';
-import prisma from '../config/prismaClient';
+// backend/src/services/service.service.ts
+
+import { PrismaClient } from '@prisma/client';
+import { ServiceCreateDtoType, ServiceUpdateDtoType, ServiceFilterDtoType } from '../models/service.dto';
+
+const prisma = new PrismaClient();
 
 export class ServiceService {
-  /** Lista activos con filtros opcionales */
-  static list(filters: IServiceFilter) {
-    return ServiceRepository.list(filters);
+  /** Lista todos los servicios, opcionalmente filtrados por categoría */
+  static async list(filter: ServiceFilterDtoType) {
+    return prisma.servicio.findMany({
+      where: {
+        activo: true,
+        ...(filter.categoriaId && { categoria_id: Number(filter.categoriaId) }),
+      },
+      select: {
+        id: true,
+        nombre: true,
+        descripcion: true,
+        precio_base: true,
+        activo: true,
+        categoria_id: true,
+        imagenUrl: true,
+      },
+    });
   }
 
-  /** Obtiene uno por ID */
-  static find(id: bigint) {
-    return ServiceRepository.findById(id);
+  static async find(id: bigint) {
+    return prisma.servicio.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        nombre: true,
+        descripcion: true,
+        precio_base: true,
+        activo: true,
+        categoria_id: true,
+        imagenUrl: true,
+      },
+    });
   }
 
-  /** Crea nuevo servicio, validando categoría si se pasó categoriaId */
-  static async create(data: IServiceCreate) {
-    if (data.categoriaId) {
-      const cat = await prisma.categoria.findUnique({ where: { id: data.categoriaId } });
-      if (!cat) {
-        throw new Error(`Categoría ${data.categoriaId} inexistente`);
-      }
-    }
-    return ServiceRepository.create(data);
+  static async create(dto: ServiceCreateDtoType) {
+    return prisma.servicio.create({
+      data: {
+        nombre: dto.nombre,
+        descripcion: dto.descripcion,
+        precio_base: dto.precio_base,
+        categoria_id: dto.categoriaId ? Number(dto.categoriaId) : undefined,
+        imagenUrl: dto.imagenUrl, // podrá venir undefined
+      },
+      select: {
+        id: true,
+        nombre: true,
+        descripcion: true,
+        precio_base: true,
+        activo: true,
+        categoria_id: true,
+        imagenUrl: true,
+      },
+    });
   }
 
-  /** Actualiza servicio existente */
-  static async update(id: bigint, data: IServiceUpdate) {
-    // validación de categoría al cambiar
-    if (data.categoriaId !== undefined && data.categoriaId !== null) {
-      const cat = await prisma.categoria.findUnique({ where: { id: data.categoriaId } });
-      if (!cat) {
-        throw new Error(`Categoría ${data.categoriaId} inexistente`);
-      }
-    }
-    return ServiceRepository.update(id, data);
+  static async update(id: bigint, dto: ServiceUpdateDtoType) {
+    return prisma.servicio.update({
+      where: { id },
+      data: {
+        ...(dto.nombre !== undefined && { nombre: dto.nombre }),
+        ...(dto.descripcion !== undefined && { descripcion: dto.descripcion }),
+        ...(dto.precio_base !== undefined && { precio_base: dto.precio_base }),
+        ...(dto.categoriaId !== undefined && { categoria_id: Number(dto.categoriaId) }),
+        ...(dto.imagenUrl !== undefined && { imagenUrl: dto.imagenUrl }),
+      },
+      select: {
+        id: true,
+        nombre: true,
+        descripcion: true,
+        precio_base: true,
+        activo: true,
+        categoria_id: true,
+        imagenUrl: true,
+      },
+    });
   }
 
-  /** Marca servicio como inactivo */
-  static inactivate(id: bigint) {
-    return ServiceRepository.inactivate(id);
+  static async inactivate(id: bigint) {
+    // En lugar de borrarlo, ponemos activo = false:
+    return prisma.servicio.update({
+      where: { id },
+      data: { activo: false },
+    });
   }
 }

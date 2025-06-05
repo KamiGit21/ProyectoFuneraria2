@@ -26,7 +26,6 @@ import Usuarios from './pages/Usuarios';
 import CategoriasLanding from './pages/Servicios/CategoriasLanding';
 import CatalogoServicios from './pages/Servicios/CatalogoServicios';
 import AdminCategorias from './pages/Servicios/AdminCategorias';
-import FormCategoria from './pages/Servicios/FormCategoria';
 import FormServicio from './pages/Servicios/FormServicio';
 
 // Órdenes
@@ -104,22 +103,7 @@ function MainRoutes() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/servicios/categorias/nueva"
-            element={
-              <PrivateRoute roles={['ADMIN']}>
-                <FormCategoria />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/servicios/categorias/editar/:id"
-            element={
-              <PrivateRoute roles={['ADMIN']}>
-                <FormCategoria />
-              </PrivateRoute>
-            }
-          />
+          {/* Ya no hay rutas de FormCategoria */}
 
           {/* — Órdenes individual (CLIENTE/OPERADOR) — */}
           <Route

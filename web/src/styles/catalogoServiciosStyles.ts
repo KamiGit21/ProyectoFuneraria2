@@ -1,3 +1,4 @@
+//web/src/styles/catalogoServiciosStyles.ts
 import { SxProps, Theme } from '@mui/material';
 
 /* ----------- GRID CONTENEDOR ----------------------------------------- */
