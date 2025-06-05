@@ -15,9 +15,9 @@ app.use('/api/public', publicRoutes)   // ← NUEVO
 //app.use('/api/usuarios', adminRoutes)
 
 // 404
-app.use((_req, res) =>
+app.all('*', (_req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada.' })
-)
+})
 
 // Error handler
 app.use((err: any, _req: express.Request, res: express.Response) => {

@@ -23,7 +23,7 @@ export default function HomeScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <Image source={require("./assets/logo.png")} style={styles.logo} />
+          {/* <Image source={require("./assets/logo.png")} style={styles.logo} /> */}
         </View>
 
         {/* Imagen principal */}
@@ -212,7 +212,10 @@ export default function HomeScreen() {
           <Text style={styles.navLabel}>Login</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} disabled>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Cart")}
+        >
           <Image
             source={require("./assets/cart-icon.png")}
             style={styles.navIcon}
@@ -220,7 +223,10 @@ export default function HomeScreen() {
           <Text style={styles.navLabel}>Carrito</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} disabled>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Buscar")}
+        >
           <Image
             source={require("./assets/search-icon.png")}
             style={styles.navIcon}
