@@ -6,7 +6,7 @@ import cors from 'cors';
 import listEndpoints from 'express-list-endpoints';
 import { bigintReplacer } from './utils/bigintSerializer';
 
-// Importación de rutas
+// Importación de rutas existentes
 import authRoutes from './routes/auth.routes';
 import clienteRoutes from './routes/cliente.routes';
 import publicRoutes from './routes/public.routes';
@@ -20,6 +20,9 @@ import categoriaRoutes from './routes/categoria.routes';
 import difuntoRoutes from './routes/difunto.routes'; 
 import dashboardRoutes from './routes/dashboard.routes';
 import pagoRoutes from './routes/pago.routes';
+
+// ← Aquí importa las notificaciones
+import notificationRoutes from './routes/notification.routes';
 
 const app = express();
 
@@ -55,6 +58,9 @@ app.use('/api/importaciones', importRoutes);
 app.use('/api/difuntos', difuntoRoutes); 
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/pagos', pagoRoutes);
+
+// ← Monta aquí la ruta de notificaciones
+app.use('/api/notificaciones', notificationRoutes);
 
 // Ruta pública para el equipo móvil
 app.use('/api/public', publicRoutes);

@@ -9,16 +9,17 @@ import {
   Alert,
   TextField,
   Grid,
-  Card,
-  CardMedia,
-  CardContent,
+  Paper,
   Divider,
+  ToggleButton,
+  ToggleButtonGroup,
+  Stack,
+  Avatar,
 } from '@mui/material';
+import { CreditCard, AccountBalance, AttachMoney, AccountBalanceWallet } from '@mui/icons-material';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axiosInstance';
 import { AuthContext } from '../contexts/AuthContext';
-
-/* Estilos específicos de esta pantalla */
 import '../styles/pagoFinal.css';
 
 interface ServicioResumen {
@@ -53,28 +54,27 @@ export default function PagoFinal() {
   const [procesandoPago, setProcesandoPago] = useState(false);
   const [mensajePago, setMensajePago] = useState<string | null>(null);
 
-  // cuál método de pago está seleccionado
   const [metodo, setMetodo] = useState<MetodoTipo>('Tarjeta');
 
-  // --- Campos para “Tarjeta” ---
-  const [cardNumber, setCardNumber] = useState('');      // solo dígitos
-  const [expiry, setExpiry] = useState('');             // formato MM/AA
-  const [cvc, setCvc] = useState('');                   // 3 dígitos
+  // Campos tarjeta
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvc, setCvc] = useState('');
   const [cardHolder, setCardHolder] = useState('');
-  // Errores específicos por campo
+
+  // Errores
   const [errorCardNumber, setErrorCardNumber] = useState<string | null>(null);
   const [errorExpiry, setErrorExpiry] = useState<string | null>(null);
   const [errorCvc, setErrorCvc] = useState<string | null>(null);
   const [errorCardHolder, setErrorCardHolder] = useState<string | null>(null);
 
-  // Detectar tipo de tarjeta (Visa/MC) según el primer dígito
   const detectCardType = (num: string) => {
     if (num.startsWith('4')) return 'Visa';
     if (num.startsWith('5')) return 'MasterCard';
     return '';
   };
 
-  /* ---------- cargar detalle de la orden ---------- */
+  // Cargar detalle de la orden
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -90,28 +90,26 @@ export default function PagoFinal() {
     })();
   }, [orderId]);
 
-  /* ---------- permisos: sólo el cliente que creó la orden y estado CONFIRMADO ---------- */
+  // Permisos
   const userRole = (authCtx?.user?.rol ?? '').toString().toUpperCase().trim();
   const userId = authCtx?.user?.id ? Number(authCtx.user.id) : null;
-
   const userEsCliente =
     userRole === 'CLIENTE' &&
     userId !== null &&
     detalle &&
     String(detalle.cliente.id) === String(userId);
-
   const puedePagar = userEsCliente && detalle?.estado === 'CONFIRMADO';
 
-  /* ---------- Validaciones del formulario de tarjeta ---------- */
+  // Validaciones
   const validarCardNumber = (num: string) => {
     const onlyDigits = num.replace(/\D/g, '');
     if (onlyDigits.length !== 16) {
-      setErrorCardNumber('El número debe tener 16 dígitos.');
+      setErrorCardNumber('Debe tener 16 dígitos.');
       return false;
     }
     const type = detectCardType(onlyDigits);
     if (type !== 'Visa' && type !== 'MasterCard') {
-      setErrorCardNumber('Solo Visa o MasterCard válidas.');
+      setErrorCardNumber('Solo Visa o MasterCard.');
       return false;
     }
     setErrorCardNumber(null);
@@ -119,23 +117,22 @@ export default function PagoFinal() {
   };
 
   const validarExpiry = (exp: string) => {
-    // Formato MM/AA, mes entre 01 y 12, año >= actual (asumimos 00-99)
     const match = exp.match(/^(\d{2})\/(\d{2})$/);
     if (!match) {
-      setErrorExpiry('Formato MM/AA requerido.');
+      setErrorExpiry('Formato MM/AA.');
       return false;
     }
     const mes = Number(match[1]);
     const año = Number(match[2]) + 2000;
     if (mes < 1 || mes > 12) {
-      setErrorExpiry('Mes inválido (01-12).');
+      setErrorExpiry('Mes inválido.');
       return false;
     }
     const ahora = new Date();
     const añoActual = ahora.getFullYear();
     const mesActual = ahora.getMonth() + 1;
     if (año < añoActual || (año === añoActual && mes < mesActual)) {
-      setErrorExpiry('Fecha de expiración vencida.');
+      setErrorExpiry('Vencida.');
       return false;
     }
     setErrorExpiry(null);
@@ -145,7 +142,7 @@ export default function PagoFinal() {
   const validarCvc = (cv: string) => {
     const onlyDigits = cv.replace(/\D/g, '');
     if (onlyDigits.length !== 3) {
-      setErrorCvc('CVC debe tener 3 dígitos.');
+      setErrorCvc('3 dígitos.');
       return false;
     }
     setErrorCvc(null);
@@ -161,7 +158,6 @@ export default function PagoFinal() {
     return true;
   };
 
-  // Determina si el formulario de tarjeta es válido:
   const tarjetaValida = () => {
     return (
       cardNumber.length === 16 &&
@@ -175,33 +171,25 @@ export default function PagoFinal() {
     );
   };
 
-  /* ---------- handle: procesar pago (mock) ---------- */
   const handleProcesarPago = async () => {
     if (!detalle) return;
     setProcesandoPago(true);
     setMensajePago(null);
-
     try {
-      // Llamamos al endpoint mock en backend, pasando el método elegido
-      await api.post(`/ordenes/${orderId}/pagar`, {
-        metodo,
-      });
+      await api.post(`/ordenes/${orderId}/pagar`, { metodo });
       setMensajePago('Pago registrado con éxito.');
-      setTimeout(() => {
-        nav('/ordenes');
-      }, 1500);
+      setTimeout(() => nav('/ordenes'), 1500);
     } catch (err: any) {
       console.error(err);
-      setMensajePago(err.response?.data?.error ?? 'Error al procesar el pago.');
+      setMensajePago(err.response?.data?.error ?? 'Error al procesar pago.');
     } finally {
       setProcesandoPago(false);
     }
   };
 
-  /* ---------- UI de carga / error ---------- */
   if (loading) {
     return (
-      <Box className="pago-final__loading">
+      <Box display="flex" justifyContent="center" alignItems="center" height="60vh">
         <CircularProgress />
       </Box>
     );
@@ -209,7 +197,7 @@ export default function PagoFinal() {
 
   if (error) {
     return (
-      <Box className="pago-final__alert">
+      <Box m={2}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -217,210 +205,287 @@ export default function PagoFinal() {
 
   if (!detalle || !puedePagar) {
     return (
-      <Box className="pago-final__alert">
-        <Alert severity="warning">
-          No tienes permisos para realizar el pago de esta orden.
-        </Alert>
+      <Box m={2}>
+        <Alert severity="warning">No tienes permisos para pagar esta orden.</Alert>
       </Box>
     );
   }
 
-  /* ---------- componente principal ---------- */
   return (
-    <Box className="pago-final">
-      <Typography variant="h4">Pago de Orden #{detalle.id}</Typography>
-      <Typography className="sub">
+    <Box
+      maxWidth={1000}
+      mx="auto"
+      p={{ xs: 2, md: 4 }}
+      fontFamily="'Source Sans Pro', sans-serif"
+      color="var(--color-dark-blue)"
+    >
+      {/* Título */}
+      <Typography
+        variant="h4"
+        fontFamily="'Playfair Display', serif"
+        fontWeight={700}
+        color="var(--color-gold)"
+        mb={1}
+      >
+        Pago de Orden #{detalle.id}
+      </Typography>
+      <Typography
+        fontFamily="'Merriweather', serif"
+        fontWeight={600}
+        color="var(--color-brown)"
+        mb={2}
+      >
         Cliente: {detalle.cliente.nombres} ({detalle.cliente.email})
       </Typography>
-      <Typography sx={{ mb: 3 }}>
+      <Typography mb={3}>
         Total a pagar: <strong>{detalle.total.toFixed(2)} Bs</strong>
       </Typography>
 
-      {/* 
-        Contenedor principal con dos columnas:
-        - Columna izquierda: métodos de pago + formulario de “Tarjeta”
-        - Columna derecha: mini resumen de servicios 
-      */}
-      <Box className="pago-columns">
-        {/* ------------------ IZQUIERDA: métodos / formulario ------------------ */}
-        <Box className="pago-col-left">
-          {/* Lista de métodos de pago (Tarjeta / Transferencia / Efectivo / Billetera) */}
-          <ul className="metodo-list">
-            {METODOS.map((m) => (
-              <React.Fragment key={m}>
-                <li
-                  className={`metodo-item ${metodo === m ? 'active' : ''}`}
-                  onClick={() => {
-                    if (procesandoPago) return;
-                    setMetodo(m);
-                    setMensajePago(null);
+      <Grid container spacing={4}>
+        {/* --------- IZQUIERDA: Métodos + Formulario --------- */}
+        <Grid item xs={12} md={7}>
+          <Paper
+            elevation={1}
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              border: '1px solid var(--color-light-gray)',
+            }}
+          >
+            {/* ToggleButtonGroup para métodos */}
+            <ToggleButtonGroup
+              value={metodo}
+              exclusive
+              onChange={(_, val) => {
+                if (val && !procesandoPago) {
+                  setMetodo(val);
+                  setMensajePago(null);
+                }
+              }}
+              aria-label="método de pago"
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 1,
+                mb: 3,
+              }}
+            >
+              {METODOS.map((m) => {
+                // Icono según método
+                let Icono = CreditCard;
+                if (m === 'Transferencia') Icono = AccountBalance;
+                if (m === 'Efectivo') Icono = AttachMoney;
+                if (m === 'Billetera') Icono = AccountBalanceWallet;
+
+                return (
+                  <ToggleButton
+                    key={m}
+                    value={m}
+                    aria-label={m}
+                    sx={{
+                      flex: '1 1 45%',
+                      borderRadius: 2,
+                      border: '2px solid var(--color-dark-blue)',
+                      '&.Mui-selected': {
+                        backgroundColor: 'var(--color-selected-bg)',
+                        borderColor: 'var(--color-gold)',
+                        color: 'var(--color-off-white)',
+                      },
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Icono fontSize="medium" />
+                      <Typography fontFamily="'Merriweather', serif" fontWeight={600}>
+                        {m}
+                      </Typography>
+                    </Stack>
+                  </ToggleButton>
+                );
+              })}
+            </ToggleButtonGroup>
+
+            {/* Formulario solo si Tarjeta */}
+            {metodo === 'Tarjeta' && (
+              <Box component="form" mt={2}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Número de tarjeta"
+                      variant="outlined"
+                      value={cardNumber}
+                      onChange={(e) => {
+                        const soloDig = e.target.value.replace(/\D/g, '').slice(0, 16);
+                        setCardNumber(soloDig);
+                        if (errorCardNumber && soloDig.length === 16) {
+                          validarCardNumber(soloDig);
+                        }
+                      }}
+                      onBlur={() => validarCardNumber(cardNumber)}
+                      helperText={errorCardNumber || detectCardType(cardNumber)}
+                      error={!!errorCardNumber}
+                      inputProps={{ maxLength: 16 }}
+                      placeholder="Ej: 4123 4567 8901 2345"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="MM/AA"
+                      variant="outlined"
+                      value={expiry}
+                      onChange={(e) => {
+                        let val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                        if (val.length >= 3) val = `${val.slice(0, 2)}/${val.slice(2)}`;
+                        setExpiry(val);
+                        if (errorExpiry && val.length === 5) validarExpiry(val);
+                      }}
+                      onBlur={() => validarExpiry(expiry)}
+                      helperText={errorExpiry || ''}
+                      error={!!errorExpiry}
+                      placeholder="MM/AA"
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="CVC"
+                      variant="outlined"
+                      value={cvc}
+                      onChange={(e) => {
+                        const soloDig = e.target.value.replace(/\D/g, '').slice(0, 3);
+                        setCvc(soloDig);
+                        if (errorCvc && soloDig.length === 3) validarCvc(soloDig);
+                      }}
+                      onBlur={() => validarCvc(cvc)}
+                      helperText={errorCvc || ''}
+                      error={!!errorCvc}
+                      placeholder="Ej: 123"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Titular de la tarjeta"
+                      variant="outlined"
+                      value={cardHolder}
+                      onChange={(e) => {
+                        setCardHolder(e.target.value);
+                        if (errorCardHolder && e.target.value.trim().length >= 3) {
+                          validarCardHolder(e.target.value);
+                        }
+                      }}
+                      onBlur={() => validarCardHolder(cardHolder)}
+                      helperText={errorCardHolder || ''}
+                      error={!!errorCardHolder}
+                      placeholder="Nombre tal como aparece"
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
+
+            {/* Acciones */}
+            <Stack direction="row" spacing={2} mt={4}>
+              <Button
+                variant="contained"
+                sx={{
+                  backgroundColor: 'var(--color-gold)',
+                  color: 'var(--color-off-white)',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#d0ba82' },
+                }}
+                onClick={handleProcesarPago}
+                disabled={procesandoPago || (metodo === 'Tarjeta' && !tarjetaValida())}
+              >
+                {procesandoPago ? 'Procesando…' : 'Confirmar Pago'}
+              </Button>
+              <Button onClick={() => nav('/ordenes')} disabled={procesandoPago}>
+                Volver a mis órdenes
+              </Button>
+            </Stack>
+
+            {mensajePago && (
+              <Alert
+                severity={mensajePago.includes('éxito') ? 'success' : 'error'}
+                sx={{ mt: 2 }}
+              >
+                {mensajePago}
+              </Alert>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* --------- DERECHA: Resumen de servicios --------- */}
+        <Grid item xs={12} md={5}>
+          <Paper
+            elevation={1}
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              border: '1px solid var(--color-light-gray)',
+              backgroundColor: '#fff',
+            }}
+          >
+            <Typography
+              variant="h6"
+              fontFamily="'Merriweather', serif"
+              fontWeight={600}
+              mb={1}
+            >
+              Resumen de tu compra
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+
+            <Stack spacing={2}>
+              {detalle.servicios.map((srv) => (
+                <Paper
+                  key={srv.id}
+                  elevation={0}
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    p: 1,
+                    borderRadius: 1,
+                    backgroundColor: 'transparent',
                   }}
                 >
-                  <span className="icon" />
-                  <div>
-                    <span className="label">{m}</span>
-                  </div>
-                </li>
-
-                {/* 
-                  Justo debajo de la tarjeta, y sólo si está seleccionada Tarjeta, 
-                  desplegamos el formulario. 
-                */}
-                {m === 'Tarjeta' && metodo === 'Tarjeta' && (
-                  <Box className="tarjeta-form" sx={{ mb: 3 }}>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Número de tarjeta"
-                          variant="outlined"
-                          value={cardNumber}
-                          onChange={(e) => {
-                            const soloDig = e.target.value
-                              .replace(/\D/g, '')
-                              .slice(0, 16);
-                            setCardNumber(soloDig);
-                            if (errorCardNumber && soloDig.length === 16) {
-                              validarCardNumber(soloDig);
-                            }
-                          }}
-                          onBlur={() => validarCardNumber(cardNumber)}
-                          helperText={errorCardNumber || detectCardType(cardNumber)}
-                          error={!!errorCardNumber}
-                          inputProps={{ maxLength: 16 }}
-                          placeholder="Ej: 4123 4567 8901 2345"
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                          fullWidth
-                          label="MM/AA"
-                          variant="outlined"
-                          value={expiry}
-                          onChange={(e) => {
-                            let val = e.target.value.replace(/\D/g, '').slice(0, 4);
-                            if (val.length >= 3) {
-                              val = `${val.slice(0, 2)}/${val.slice(2)}`;
-                            }
-                            setExpiry(val);
-                            if (errorExpiry && val.length === 5) {
-                              validarExpiry(val);
-                            }
-                          }}
-                          onBlur={() => validarExpiry(expiry)}
-                          helperText={errorExpiry || ''}
-                          error={!!errorExpiry}
-                          placeholder="MM/AA"
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TextField
-                          fullWidth
-                          label="CVC"
-                          variant="outlined"
-                          value={cvc}
-                          onChange={(e) => {
-                            const soloDig = e.target.value.replace(/\D/g, '').slice(0, 3);
-                            setCvc(soloDig);
-                            if (errorCvc && soloDig.length === 3) {
-                              validarCvc(soloDig);
-                            }
-                          }}
-                          onBlur={() => validarCvc(cvc)}
-                          helperText={errorCvc || ''}
-                          error={!!errorCvc}
-                          placeholder="Ej: 123"
-                        />
-                      </Grid>
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Titular de la tarjeta"
-                          variant="outlined"
-                          value={cardHolder}
-                          onChange={(e) => {
-                            setCardHolder(e.target.value);
-                            if (errorCardHolder && e.target.value.trim().length >= 3) {
-                              validarCardHolder(e.target.value);
-                            }
-                          }}
-                          onBlur={() => validarCardHolder(cardHolder)}
-                          helperText={errorCardHolder || ''}
-                          error={!!errorCardHolder}
-                          placeholder="Nombre tal como aparece en la tarjeta"
-                        />
-                      </Grid>
-                    </Grid>
+                  {srv.imagenUrl && (
+                    <Avatar
+                      variant="rounded"
+                      src={srv.imagenUrl}
+                      alt={srv.nombre}
+                      sx={{
+                        width: { xs: 48, md: 64 },
+                        height: { xs: 48, md: 64 },
+                        mr: 2,
+                      }}
+                    />
+                  )}
+                  <Box>
+                    <Typography
+                      fontFamily="'Merriweather', serif"
+                      fontSize="1rem"
+                      fontWeight={600}
+                    >
+                      {srv.nombre}
+                    </Typography>
+                    <Typography fontSize="0.9rem" color="var(--color-dark-blue)">
+                      {srv.cantidad} × {srv.precio_base.toFixed(2)} Bs ={' '}
+                      <strong>{srv.subtotal.toFixed(2)} Bs</strong>
+                    </Typography>
                   </Box>
-                )}
-              </React.Fragment>
-            ))}
-          </ul>
+                </Paper>
+              ))}
+            </Stack>
 
-          {/* Botón “Confirmar Pago” para cualquiera de los métodos */}
-          <Box className="pago-actions" sx={{ mb: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleProcesarPago}
-              disabled={
-                procesandoPago ||
-                (metodo === 'Tarjeta' && !tarjetaValida())
-              }
-            >
-              {procesandoPago ? 'Procesando…' : 'Confirmar Pago'}
-            </Button>
-            <Button onClick={() => nav('/ordenes')} disabled={procesandoPago}>
-              Volver a mis órdenes
-            </Button>
-          </Box>
-
-          {/* Mensaje de resultado (éxito o error) */}
-          {mensajePago && (
-            <Alert
-              severity={mensajePago.includes('éxito') ? 'success' : 'error'}
-              sx={{ mt: 1 }}
-            >
-              {mensajePago}
-            </Alert>
-          )}
-        </Box>
-
-        {/* ------------------ DERECHA: resumen de servicios ------------------ */}
-        <Box className="pago-col-right">
-          <Typography variant="h6" sx={{ mb: 1 }}>
-            Resumen de tu compra
-          </Typography>
-          <Divider sx={{ mb: 1 }} />
-
-          {detalle.servicios.map((srv) => (
-            <Card key={srv.id} className="resumen-card" elevation={0}>
-              {srv.imagenUrl && (
-                <CardMedia
-                  component="img"
-                  image={srv.imagenUrl}
-                  alt={srv.nombre}
-                  className="resumen-img"
-                />
-              )}
-              <CardContent className="resumen-info">
-                <Typography className="resumen-nombre">
-                  {srv.nombre}
-                </Typography>
-                <Typography className="resumen-subtotal">
-                  {srv.cantidad} × {srv.precio_base.toFixed(2)} Bs ={' '}
-                  <strong>{srv.subtotal.toFixed(2)} Bs</strong>
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-
-          <Divider sx={{ my: 1 }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-            Total: {detalle.total.toFixed(2)} Bs
-          </Typography>
-        </Box>
-      </Box>
+            <Divider sx={{ mt: 2, mb: 1 }} />
+            <Typography variant="subtitle1" fontWeight={600}>
+              Total: {detalle.total.toFixed(2)} Bs
+            </Typography>
+          </Paper>
+        </Grid>
+      </Grid>
     </Box>
   );
 }

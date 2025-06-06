@@ -1,40 +1,48 @@
 /* web/src/styles/orderDetail.css */
 
-/* Spinner dentro del modal */
+:root {
+  --color-marron: #6C4F4B;
+  --color-gris-claro: #CED2D4;
+  --color-dorado: #B59F6B;
+  --color-crema: #F2EFEA;
+  --color-azul-gris: #3A4A58;
+
+  --font-titulo: 'Playfair Display', serif;
+  --font-subtitulo: 'Merriweather', serif;
+  --font-texto: 'Source Sans Pro', sans-serif;
+}
+
 .orderdetail-loading {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
 }
 
-/* Styling general del Paper dentro del modal */
 .orderdetail-paper {
   background-color: #ffffff;
-  /* Puedes agregar sombreado, padding extra, etc. */
+  font-family: var(--font-texto);
+  color: var(--color-azul-gris);
 }
 
-/* Label de cada sección */
 .orderdetail-label {
-  font-weight: 600;
-  color: #3a4a58;
+  font-family: var(--font-subtitulo);
+  font-size: 16px;
+  color: var(--color-marron);
+  margin-bottom: 0.25rem;
 }
 
-/* Estado (solo lectura para clientes) */
 .orderdetail-estado {
-  padding: 0.4rem 0.6rem;
-  background-color: #f1f5f9;
-  border-radius: 4px;
-  display: inline-block;
+  font-family: var(--font-subtitulo);
+  font-size: 16px;
+  color: var(--color-azul-gris);
+  font-weight: 600;
 }
 
-/* Contenedor para la imagen y datos del servicio */
-.orderdetail-servicio-box {
-  display: flex;
-  align-items: center;
+/* Espaciados internos y estéticas generales */
+.orderdetail-paper .MuiTypography-root {
+  color: var(--color-azul-gris);
 }
 
-/* Contenedor de botones dentro del modal */
-.orderdetail-buttons {
-  display: flex;
-  justify-content: flex-end;
+.orderdetail-paper .MuiGrid-container {
+  margin-top: 1rem;
 }

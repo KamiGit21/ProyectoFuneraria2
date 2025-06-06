@@ -53,7 +53,7 @@
     nombres               String   @db.VarChar(100)
     fecha_fallecido       DateTime @db.Date
     lugar_fallecimiento   String?  @db.VarChar(150)
-    contacto_responsable  String?  @db.VarChar(20)
+    contacto_responsable  String?  @db.VarChar(100)
     relacion_solicitante  String?  @db.VarChar(50)
     notas                 String?  
     orden                 orden    @relation(fields: [orden_id], references: [id], onDelete: Cascade)

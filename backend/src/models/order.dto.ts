@@ -1,4 +1,5 @@
 // backend/src/models/order.dto.ts
+
 import { z } from "zod";
 
 /**
@@ -11,7 +12,7 @@ export type ChangeStatusBodyDtoType = z.infer<typeof ChangeStatusBodyDto>;
 
 /**
  * DTO “rápido” para un solo servicio + difunto
- * (originalmente lo llamabas OrdenFastCreateDto)
+ * (OrdenFastCreateDto)
  */
 export const OrdenFastCreateDto = z.object({
   servicioId: z.number(),            // id del servicio que el usuario eligió
@@ -30,7 +31,7 @@ export type OrdenFastCreateDtoType = z.infer<typeof OrdenFastCreateDto>;
 
 /**
  * DTO para creación de una orden con múltiples líneas (varios servicios) + difunto.
- *  
+ *
  * Este es el objeto que espera el endpoint POST /ordenes:
  * {
  *   clienteId:    number,

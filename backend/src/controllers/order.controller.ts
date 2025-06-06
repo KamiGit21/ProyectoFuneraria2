@@ -1,5 +1,3 @@
-// backend/src/controllers/order.controller.ts
-
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 
@@ -20,12 +18,7 @@ function buildFullImageUrl(req: Request, relativePath: string): string {
 }
 
 /* Métodos permitidos según la constraint de la BD */
-const ALLOWED_METHODS = [
-  "Tarjeta",
-  "Transferencia",
-  "Efectivo",
-  "Billetera",
-];
+const ALLOWED_METHODS = ["Tarjeta", "Transferencia", "Efectivo", "Billetera"];
 
 /**
  * Normaliza el método recibido desde frontend:
@@ -36,9 +29,7 @@ const ALLOWED_METHODS = [
 function resolveMetodoPago(raw?: unknown): string {
   if (typeof raw !== "string") return "Tarjeta";
   const clean = raw.trim();
-  const found = ALLOWED_METHODS.find(
-    (m) => m.toLowerCase() === clean.toLowerCase()
-  );
+  const found = ALLOWED_METHODS.find((m) => m.toLowerCase() === clean.toLowerCase());
   return found ?? "Tarjeta";
 }
 
@@ -59,51 +50,66 @@ export const createFast = async (req: Request, res: Response) => {
     const nuevaOrden = await OrderService.create(payload);
 
     /* correo de confirmación (best-effort) */
+    let previewUrl: string | null = null;
     try {
       const usuario = await prisma.usuario.findUnique({
         where: { id: BigInt(parsed.data.clienteId) },
         select: { email: true },
       });
       if (usuario?.email) {
-        await sendOrderConfirmation(usuario.email, nuevaOrden.id);
+        previewUrl = await sendOrderConfirmation(usuario.email, nuevaOrden.id);
       }
     } catch (mailErr) {
       console.warn("⚠️  Mailer:", mailErr);
     }
 
-    return res.status(201).json({ id: nuevaOrden.id });
+    // Devolvemos id + previewUrl
+    return res.status(201).json({ id: nuevaOrden.id, previewUrl });
   } catch (err) {
     console.error("createFast:", err);
-    return res
-      .status(500)
-      .json({ error: "Error interno al crear la orden rápida" });
+    return res.status(500).json({ error: "Error interno al crear la orden rápida" });
   }
 };
 
 /* ------------------- 2) Orden con varias líneas ---------- */
 export const create = async (req: Request, res: Response) => {
+  // ** Console.log de diagnóstico **
+  console.log("▶️ POST /api/ordenes – body recibido:", JSON.stringify(req.body));
+
   const parsed = OrderCreateDto.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json(parsed.error);
+  if (!parsed.success) {
+    console.warn("❌ Validación Zod falló:", parsed.error.format());
+    return res.status(400).json(parsed.error);
+  }
 
   try {
     const order = await OrderService.create(parsed.data);
 
     /* correo de confirmación (best-effort) */
+    let previewUrl: string | null = null;
     try {
       const usuario = await prisma.usuario.findUnique({
         where: { id: BigInt(parsed.data.clienteId) },
         select: { email: true },
       });
       if (usuario?.email) {
-        await sendOrderConfirmation(usuario.email, order.id);
+        previewUrl = await sendOrderConfirmation(usuario.email, order.id);
       }
     } catch (mailErr) {
       console.warn("⚠️  Mailer:", mailErr);
     }
 
-    return res.status(201).json({ id: order.id });
-  } catch (err) {
-    console.error("create:", err);
+    // Devolvemos id y previewUrl
+    return res.status(201).json({ id: order.id, previewUrl });
+  } catch (err: any) {
+    // Detectar si es un error P2000 (cadena demasiado larga para la columna)
+    if (err.code === "P2000") {
+      console.error("❌ Prueba de longitud de columna excedida:", err.meta);
+      return res
+        .status(400)
+        .json({ error: "Uno de los campos del difunto excede la longitud permitida." });
+    }
+    console.error("❌ create:", err);
     return res.status(500).json({ error: "Error interno al crear la orden" });
   }
 };
@@ -134,10 +140,8 @@ export const get = async (req: Request, res: Response) => {
       },
     });
     if (!order) return res.status(404).json({ error: "Orden no encontrada" });
-    if (!order.orden_detalle.length)
-      return res.status(404).json({ error: "Sin servicios" });
-    if (!order.difunto.length)
-      return res.status(404).json({ error: "Sin difunto" });
+    if (!order.orden_detalle.length) return res.status(404).json({ error: "Sin servicios" });
+    if (!order.difunto.length) return res.status(404).json({ error: "Sin difunto" });
 
     const servicios = order.orden_detalle.map((l) => ({
       id: l.servicio.id,
@@ -208,10 +212,54 @@ export const changeStatus = async (req: Request, res: Response) => {
   const parsed = ChangeStatusBodyDto.safeParse(req.body);
   if (!parsed.success) return res.status(400).json(parsed.error);
 
+  let orderId: bigint;
   try {
-    const id = BigInt(req.params.id);
-    const updated = await OrderService.changeStatus(id, parsed.data.estado);
-    return res.json(updated);
+    orderId = BigInt(req.params.id);
+  } catch {
+    return res.status(400).json({ error: "ID de orden inválido." });
+  }
+
+  try {
+    // 1) Cambiar estado en la base de datos
+    const updatedOrder = await OrderService.changeStatus(orderId, parsed.data.estado);
+
+    // 2) Obtener el cliente (y opcionalmente el operador) asociado
+    const orderConCliente = await prisma.orden.findUnique({
+      where: { id: orderId },
+      select: {
+        cliente_id: true,
+        operador_id: true,
+      },
+    });
+
+    if (orderConCliente) {
+      const destinatarioClienteId = orderConCliente.cliente_id;
+      const asunto = `Orden #${orderId.toString()} actualizada`;
+      const cuerpo = `El estado de tu orden #${orderId.toString()} ha cambiado a "${parsed.data.estado}".`;
+
+      // 3) Crear fila en `notificacion` para el cliente
+      await prisma.notificacion.create({
+        data: {
+          usuario_id: destinatarioClienteId,
+          asunto,
+          cuerpo,
+          // `leida` = false, `enviado_en` = ahora, por defecto
+        },
+      });
+
+      // ←— Si deseas notificar al operador, descomenta esto:
+      // if (orderConCliente.operador_id) {
+      //   await prisma.notificacion.create({
+      //     data: {
+      //       usuario_id: orderConCliente.operador_id!,
+      //       asunto: `Has actualizado Orden #${orderId.toString()}`,
+      //       cuerpo: `Has cambiado el estado de la orden #${orderId.toString()} a "${parsed.data.estado}".`,
+      //     },
+      //   });
+      // }
+    }
+
+    return res.json({ success: true, updated: updatedOrder });
   } catch (err) {
     console.error("changeStatus:", err);
     return res.status(500).json({ error: "Error interno al cambiar estado" });
@@ -250,14 +298,9 @@ export const pagarOrden = async (req: Request, res: Response) => {
     where: { id: ordenId },
     select: { estado: true, total: true },
   });
-  if (!orden) {
-    return res.status(404).json({ error: "Orden no encontrada." });
-  }
-  if (orden.estado !== "CONFIRMADO") {
-    return res
-      .status(400)
-      .json({ error: "La orden no está en estado CONFIRMADO." });
-  }
+  if (!orden) return res.status(404).json({ error: "Orden no encontrada." });
+  if (orden.estado !== "CONFIRMADO")
+    return res.status(400).json({ error: "La orden no está en estado CONFIRMADO." });
 
   // 2) Determinar método de pago recibido
   const metodo = resolveMetodoPago(req.body?.metodo);
@@ -265,23 +308,25 @@ export const pagarOrden = async (req: Request, res: Response) => {
   // 3) Registrar el pago como CONFIRMADO de inmediato (mock)
   try {
     await prisma.$transaction(async (tx) => {
-      // 3.1) Crear registro en la tabla 'pago'
+      // 3.1) Crear registro en 'pago'
       await tx.pago.create({
         data: {
           orden_id: ordenId,
           monto: orden.total,
-          metodo, // "Tarjeta", "Transferencia", "Efectivo" o "Billetera"
+          metodo,
           estado: "CONFIRMADO",
-          referencia: `MOCK-${Date.now()}`, // referencia generada
+          referencia: `MOCK-${Date.now()}`,
           detalles_gateway: null,
         },
       });
 
-      // 3.2) Actualizar la orden: en lugar de dejarla en "CONFIRMADO",
-      // marcamos el campo 'estado' como "PAGADO"
+      // 3.2) Actualizar la orden a "PAGADO"
       await tx.orden.update({
         where: { id: ordenId },
-        data: { estado: "PAGADO", pagado_en: new Date() },
+        data: {
+          estado: "PAGADO",
+          pagado_en: new Date(),
+        },
       });
     });
 

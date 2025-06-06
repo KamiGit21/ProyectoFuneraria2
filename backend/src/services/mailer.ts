@@ -1,14 +1,10 @@
 // backend/src/services/mailer.ts
-import nodemailer, { Transporter } from 'nodemailer';
-import 'dotenv/config';
+
+import nodemailer, { Transporter } from "nodemailer";
+import "dotenv/config";
 
 let transporter: Transporter;
 
-/**
- * Inicializa (o devuelve) el transporter SMTP.
- * Usa las variables de entorno SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS.
- * Si no están definidas cae en Ethereal para pruebas.
- */
 async function getTransporter(): Promise<Transporter> {
   if (transporter) return transporter;
 
@@ -33,69 +29,77 @@ async function getTransporter(): Promise<Transporter> {
       secure: test.smtp.secure,
       auth: { user: test.user, pass: test.pass },
     });
-    console.log('✉️ Ethereal credentials:', test.user, test.pass);
+    console.log("✉️ Ethereal credentials:", test.user, test.pass);
   }
-
   return transporter;
 }
 
 /**
- * Genera un código de 6 dígitos para verificación.
+ * Envía un correo de confirmación de nueva orden y retorna la URL de vista previa en Ethereal.
  */
-export function genCode(): string {
-  return Math.floor(100_000 + Math.random() * 900_000).toString();
-}
-
-/**
- * Envía un correo con el código de verificación al registro.
- */
-export async function sendVerificationEmail(to: string, code: string) {
+export async function sendOrderConfirmation(
+  toEmail: string,
+  orderId: bigint
+): Promise<string> {
   const tr = await getTransporter();
-  const info = await tr.sendMail({
-    from: `"LumenGest" <${process.env.SMTP_USER || 'no-reply@lumengest.com'}>`,
-    to,
-    subject: 'Tu código de verificación en LumenGest',
-    html:
-      `<p>Tu código de verificación es:</p>` +
-      `<h2 style="letter-spacing:4px">${code}</h2>` +
-      `<p>Expira en 24 horas.</p>`,
+
+  // Formateamos fecha legible
+  const fecha = new Date().toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
   });
-  console.log('💌 Verification Preview URL:', nodemailer.getTestMessageUrl(info));
-}
 
-/**
- * Envía un correo con el enlace de restablecimiento de contraseña.
- */
-export async function sendPasswordResetEmail(email: string, token: string) {
-  const tr = await getTransporter();
-  const frontend = process.env.FRONTEND_URL || 'http://localhost:5173';
-  const resetLink = `${frontend}/reset-password?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; color: #333;">
+      <h2 style="color: #3A4A58;">¡Gracias por confiar en LumenGest!</h2>
+      <p>Estimado cliente,</p>
+      <p>Nos complace informarle que su <strong>Orden de Servicio Funerario</strong> ha sido creada exitosamente.</p>
+      <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>ID de orden:</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">#${orderId.toString()}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Fecha de creación:</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${fecha}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Estado actual:</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd; color: #B59F6B;"><strong>PENDIENTE</strong></td>
+        </tr>
+      </table>
+      <p style="margin-top: 1.5rem;">
+        A continuación encontrará un breve resumen de los siguientes pasos:
+      </p>
+      <ol style="margin-left: 1.2rem;">
+        <li>Revisaremos los datos de su solicitud y documentos adjuntos.</li>
+        <li>En las próximas 24-48 horas, recibirá otra notificación por correo cuando su trámite avance a <strong>"CONFIRMADO"</strong> o si requieren información adicional.</li>
+        <li>
+          En caso de consultas o cambios de último momento, puede contactarnos directamente al <a href="tel:+59171234567" style="color: #3A4A58;">+591 7 1234567</a> o al correo 
+          <a href="mailto:soporte@lumengest.com" style="color: #3A4A58;">soporte@lumengest.com</a>.
+        </li>
+      </ol>
+      <p style="margin-top: 1.5rem;">
+        Gracias por permitirnos acompañarlo en este momento tan delicado. Quedamos a su disposición para cualquier otra consulta.
+      </p>
+      <hr style="margin: 2rem 0; border-color: #ddd;" />
+      <footer style="font-size: 0.9rem; color: #777;">
+        <p><strong>LumenGest Servicios Funerarios</strong></p>
+        <p>Dirección: Av. Siempreviva 123, La Paz, Bolivia</p>
+        <p>Teléfono: +591 7 1234567 | Email: soporte@lumengest.com</p>
+      </footer>
+    </div>
+  `;
 
   const info = await tr.sendMail({
-    from: `"LumenGest" <${process.env.SMTP_USER || 'no-reply@lumengest.com'}>`,
-    to: email,
-    subject: 'Restablece tu contraseña',
-    html:
-      `<p>Para restablecer tu contraseña, haz click en el siguiente enlace:</p>` +
-      `<p><a href="${resetLink}">Restablecer contraseña</a></p>` +
-      `<p>Si no solicitaste esto, ignora este correo.</p>`,
-  });
-  console.log('🔑 Password reset Preview URL:', nodemailer.getTestMessageUrl(info));
-}
-
-/**
- * Envía un correo de confirmación de nueva orden.
- */
-export async function sendOrderConfirmation(toEmail: string, orderId: bigint) {
-  const tr = await getTransporter();
-  const info = await tr.sendMail({
-    from: `"LumenGest" <${process.env.SMTP_USER || 'no-reply@lumengest.com'}>`,
+    from: `"LumenGest" <${process.env.SMTP_USER || "no-reply@lumengest.com"}>`,
     to: toEmail,
-    subject: 'Confirmación de Orden de Servicio Funerario',
-    html:
-      `<p>Su orden con ID <strong>#${orderId.toString()}</strong> ha sido creada correctamente.</p>` +
-      `<p>Estado actual: <strong>PENDIENTE</strong>.</p>` +
-      `<p>Le notificaremos por correo cada vez que su trámite cambie de estado.</p>`,
+    subject: "LumenGest · Confirmación de su Orden de Servicio Funerario",
+    html: htmlContent,
   });
-  console.log('✉️ Order confirmation Preview URL:', nodemailer.getTestMessageUrl(info));
+
+  const previewUrl = nodemailer.getTestMessageUrl(info)!;
+  console.log("✉️ Order confirmation Preview URL:", previewUrl);
+  return previewUrl;
 }
