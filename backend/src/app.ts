@@ -1,5 +1,6 @@
 // backend/src/app.ts
 
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import listEndpoints from 'express-list-endpoints';
@@ -16,6 +17,9 @@ import serviceRoutes from './routes/service.routes';
 import orderRoutes from './routes/order.routes';
 import importRoutes from './routes/import.routes';
 import categoriaRoutes from './routes/categoria.routes';
+import difuntoRoutes from './routes/difunto.routes'; 
+import dashboardRoutes from './routes/dashboard.routes';
+import pagoRoutes from './routes/pago.routes';
 
 const app = express();
 
@@ -48,6 +52,9 @@ app.use('/api/servicios', serviceRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/ordenes', orderRoutes);
 app.use('/api/importaciones', importRoutes);
+app.use('/api/difuntos', difuntoRoutes); 
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/pagos', pagoRoutes);
 
 // Ruta pública para el equipo móvil
 app.use('/api/public', publicRoutes);

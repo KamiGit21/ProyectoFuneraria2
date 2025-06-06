@@ -1,0 +1,40 @@
+/* web/src/styles/orderDetail.css */
+
+/* Spinner dentro del modal */
+.orderdetail-loading {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+/* Styling general del Paper dentro del modal */
+.orderdetail-paper {
+  background-color: #ffffff;
+  /* Puedes agregar sombreado, padding extra, etc. */
+}
+
+/* Label de cada sección */
+.orderdetail-label {
+  font-weight: 600;
+  color: #3a4a58;
+}
+
+/* Estado (solo lectura para clientes) */
+.orderdetail-estado {
+  padding: 0.4rem 0.6rem;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Contenedor para la imagen y datos del servicio */
+.orderdetail-servicio-box {
+  display: flex;
+  align-items: center;
+}
+
+/* Contenedor de botones dentro del modal */
+.orderdetail-buttons {
+  display: flex;
+  justify-content: flex-end;
+}

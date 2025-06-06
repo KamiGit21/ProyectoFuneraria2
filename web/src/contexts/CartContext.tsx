@@ -1,70 +1,105 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from 'react';
 import type { Servicio } from '../api/services';
 
-export interface CartLine { servicio: Servicio; cantidad: number; }
-
-interface CartCtx {
-  items      : CartLine[];
-  addItem    : (s: Servicio) => void;
-  removeItem : (id: string | number) => void;
-  clear      : () => void;
-  total      : () => number;
+export interface CartItem {
+  servicio: Servicio;
+  cantidad: number;
 }
 
-const CartContext = createContext<CartCtx | undefined>(undefined);
+interface CartContextValue {
+  items: CartItem[];
+  total: () => number;
+  addItem: (servicio: Servicio, cantidad?: number) => void;
+  removeItem: (servicioId: number) => void;
+  clear: () => void;
+  updateItem: (servicioId: number, nuevaCantidad: number) => void;
+}
 
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  /* ---------- carga inicial ---------- */
-  const [items, setItems] = useState<CartLine[]>(() => {
+const CartContext = createContext<CartContextValue | null>(null);
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  // 1) Inicializar desde localStorage
+  const [items, setItems] = useState<CartItem[]>(() => {
     try {
-      const raw = localStorage.getItem('cart');
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
+      const datosGuardados = localStorage.getItem('cart');
+      return datosGuardados ? JSON.parse(datosGuardados) : [];
+    } catch (error) {
+      console.error('Error leyendo carrito de localStorage:', error);
+      return [];
+    }
   });
 
-  /* ---------- persistencia ---------- */
+  // 2) Cada vez que cambie `items`, actualizar localStorage
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
+    try {
+      localStorage.setItem('cart', JSON.stringify(items));
+    } catch (error) {
+      console.error('Error guardando carrito en localStorage:', error);
+    }
   }, [items]);
 
-  /* ---------- helpers ---------- */
-  const addItem = (s: Servicio) =>
-    setItems(prev => {
-      const idStr = String(s.id);
-      const idx   = prev.findIndex(l => String(l.servicio.id) === idStr);
-
+  const addItem = (servicio: Servicio, cantidad: number = 1) => {
+    setItems((prev) => {
+      const idx = prev.findIndex((ci) => ci.servicio.id === servicio.id);
       if (idx >= 0) {
-        /* mismo servicio ⇒ solo aumentamos cantidad */
-        const clone = [...prev];
-        clone[idx]  = { ...clone[idx], cantidad: clone[idx].cantidad + 1 };
-        return clone;
+        const newArr = [...prev];
+        newArr[idx] = {
+          servicio: newArr[idx].servicio,
+          cantidad: newArr[idx].cantidad + cantidad,
+        };
+        return newArr;
       }
-      /* nuevo servicio */
-      return [...prev, { servicio: s, cantidad: 1 }];
+      return [...prev, { servicio, cantidad }];
     });
+  };
 
-  const removeItem = (id: string | number) =>
-    setItems(prev => prev.filter(l => String(l.servicio.id) !== String(id)));
+  const removeItem = (servicioId: number) => {
+    setItems((prev) => prev.filter((ci) => ci.servicio.id !== servicioId));
+  };
 
-  const clear = () => setItems([]);
+  const clear = () => {
+    setItems([]); // Esto también borrará la clave "cart" de localStorage en el siguiente useEffect
+  };
 
-  const total = () =>
-    items.reduce((acc, l) => {
-      const price = Number(l.servicio.precio_base) || 0;
-      return acc + price * l.cantidad;
+  const updateItem = (servicioId: number, nuevaCantidad: number) => {
+    setItems((prev) =>
+      prev.map((ci) =>
+        ci.servicio.id === servicioId
+          ? { servicio: ci.servicio, cantidad: nuevaCantidad }
+          : ci
+      )
+    );
+  };
+
+  const total = () => {
+    return items.reduce((acc, ci) => {
+      const precio = Number(ci.servicio.precio_base) || 0;
+      return acc + precio * ci.cantidad;
     }, 0);
+  };
 
-  return (
-    <CartContext.Provider
-      value={{ items, addItem, removeItem, clear, total }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-};
+  const value: CartContextValue = {
+    items,
+    total,
+    addItem,
+    removeItem,
+    clear,
+    updateItem,
+  };
 
-export const useCart = () => {
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}
+
+export function useCart() {
   const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart debe usarse dentro de <CartProvider>');
+  if (!ctx) {
+    throw new Error('useCart debe usarse dentro de un <CartProvider>');
+  }
   return ctx;
-};
+}

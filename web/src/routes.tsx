@@ -1,4 +1,5 @@
-// src/routes.tsx
+// web/src/routes.tsx
+
 import React, { useEffect } from 'react';
 import {
   BrowserRouter,
@@ -22,26 +23,27 @@ import ResetPassword from './pages/ResetPassword';
 import RegistrarCliente from './pages/RegistrarCliente';
 import Usuarios from './pages/Usuarios';
 
-// Servicios & Categorías
 import CategoriasLanding from './pages/Servicios/CategoriasLanding';
 import CatalogoServicios from './pages/Servicios/CatalogoServicios';
 import AdminCategorias from './pages/Servicios/AdminCategorias';
 import FormServicio from './pages/Servicios/FormServicio';
 
-// Órdenes
-import WizardContratacion from './pages/Ordenes/WizardContratacion';
-import SeguimientoOrden from './pages/Ordenes/SeguimientoOrden';
+// Checkout (carrito multi-servicio)
+import Checkout from './pages/Checkout';
 
 // Importación CSV
 import ImportCsv from './pages/Importacion/ImportCsv';
 
-// Checkout (carrito multi-servicio)
-import Checkout from './pages/Checkout';
-
-// Nuevas páginas de Admin (from main)
+// Nuevas páginas de Admin
 import AdminPanel from './pages/AdminPanel';
 import Dashboard from './pages/Dashboard';
 import Auditorias from './pages/Auditorias';
+
+// ==== Importamos nuestra OrderList (lista de órdenes) ====  
+import OrderList from './pages/OrderList';
+
+// ==== Importamos el componente de Pago Final ====  
+import PagoFinal from './pages/PagoFinal';
 
 function MainRoutes() {
   const location = useLocation();
@@ -103,17 +105,6 @@ function MainRoutes() {
               </PrivateRoute>
             }
           />
-          {/* Ya no hay rutas de FormCategoria */}
-
-          {/* — Órdenes individual (CLIENTE/OPERADOR) — */}
-          <Route
-            path="/ordenes/seguimiento/:id"
-            element={
-              <PrivateRoute roles={['CLIENTE', 'OPERADOR']}>
-                <SeguimientoOrden />
-              </PrivateRoute>
-            }
-          />
 
           {/* — Checkout Multicarrito (CLIENTE/OPERADOR) — */}
           <Route
@@ -125,12 +116,36 @@ function MainRoutes() {
             }
           />
 
-          {/* — Importación CSV (ADMIN) — */}
+          {/* — Lista de Órdenes (CLIENTE/OPERADOR/ADMIN) — */}
           <Route
-            path="/importar"
+            path="/ordenes"
             element={
-              <PrivateRoute roles={['ADMIN']}>
-                <ImportCsv />
+              <PrivateRoute roles={['CLIENTE', 'OPERADOR', 'ADMIN']}>
+                <OrderList />
+              </PrivateRoute>
+            }
+          />
+
+          {/* — Pago Final (CLIENTE solamente, y la ruta es /ordenes/:id/pagar) — */}
+          <Route
+            path="/ordenes/:id/pagar"
+            element={
+              <PrivateRoute roles={['CLIENTE']}>
+                <PagoFinal />
+              </PrivateRoute>
+            }
+          />
+
+          {/* — Seguimiento de una orden individual (CLIENTE/OPERADOR) — */}
+          <Route
+            path="/ordenes/seguimiento/:id"
+            element={
+              <PrivateRoute roles={['CLIENTE', 'OPERADOR']}>
+                <Navigate to="/ordenes" replace />
+                {/**
+                  Si más adelante deseas un componente distinto para seguimiento (en vez de redirigir),
+                  reemplaza la línea anterior por: <SeguimientoOrden />
+                */}
               </PrivateRoute>
             }
           />
@@ -177,6 +192,16 @@ function MainRoutes() {
             element={
               <PrivateRoute roles={['ADMIN']}>
                 <Auditorias />
+              </PrivateRoute>
+            }
+          />
+
+          {/* — Importación CSV (ADMIN) — */}
+          <Route
+            path="/importar"
+            element={
+              <PrivateRoute roles={['ADMIN']}>
+                <ImportCsv />
               </PrivateRoute>
             }
           />
