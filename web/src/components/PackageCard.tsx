@@ -1,44 +1,53 @@
+
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './PackageCard.css';
 
 interface Servicio {
   nombre: string;
+  descripcion: string;
+  precio_base: string;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+  categoria_id: number;
 }
 
 interface PackageCardProps {
-  nombre: string;
+  servicio: Servicio;
   imagen?: string;
-  servicios: Servicio[];
-  descripcion: string;
-  precio: string;
-  onVerPaquete?: () => void;
+  onVerPaquete?: (servicio: Servicio) => void;
 }
 
 const PackageCard: React.FC<PackageCardProps> = ({
-  nombre,
+  servicio,
   imagen,
-  servicios,
-  descripcion,
-  precio,
   onVerPaquete
 }) => {
+  const navigate = useNavigate();
+
+  const handleVerPaquete = () => {
+    // First, if onVerPaquete exists, call it with the service
+    if (onVerPaquete) {
+      onVerPaquete(servicio);
+    }
+    
+    // Navigate to the services catalog filtered by this service's category
+    navigate(`/servicios/cat/${servicio.categoria_id}`);
+  };
+
   return (
     <div className="package-card">
-      <h2 className="package-title">{nombre}</h2>
+      <h2 className="package-title">{servicio.nombre}</h2>
       <div className="package-image">
-        {imagen ? <img src={imagen} alt="Paquete" /> : 'Imagen'}
+        {imagen ? <img src={imagen} alt={servicio.nombre} /> : 'Imagen'}
       </div>
       <div className="services-and-description">
-        <div className="services-list">
-          {servicios.map((servicio, index) => (
-          <p key={index} className="service-item">- {servicio.nombre}</p>
-          ))}
-        </div>
-        <p className="package-description">{descripcion}</p>
+        <p className="package-description">{servicio.descripcion}</p>
       </div>
       <div className="package-footer">
-        <span className="package-price">Precio: {precio}</span>
-        <button className="view-package-btn" onClick={onVerPaquete}>Ver paquete</button>
+        <span className="package-price">Precio: ${servicio.precio_base}</span>
+        <button className="view-package-btn" onClick={handleVerPaquete}>Ver servicios</button>
       </div>
     </div>
   );

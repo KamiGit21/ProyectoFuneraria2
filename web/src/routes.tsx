@@ -18,6 +18,8 @@ import Login from './pages/Login';
 import Autoregistro from './pages/AutoRegistro';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import ContactPage from './pages/ContactPage';
+import ObituariosPage from './pages/ObituariosPage';
 
 import RegistrarCliente from './pages/RegistrarCliente';
 import Usuarios from './pages/Usuarios';
@@ -72,6 +74,10 @@ function MainRoutes() {
           <Route path="/autoregistro" element={<Autoregistro />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/contacto" element={<ContactPage />} />
+          <Route path="/obituarios" element={<ObituariosPage />} />
+
+          {/* — Wizard de Contratación (CLIENTE/OPERADOR) — */}
 
           {/* — Catálogo de Categorías & Servicios — */}
           <Route path="/servicios" element={<CategoriasLanding />} />

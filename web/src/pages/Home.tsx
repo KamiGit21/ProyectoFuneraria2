@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Typography } from '@mui/material';
+import { getServicios, getCategorias } from '../api/services';
+import FAQComponent from '../components/FAQComponent';
 import {
   Section,
   Title,
@@ -14,7 +17,53 @@ import tarjeta from '../components/Testimoneo';
 import PackageCard from '../components/PackageCard';
 import Carrusel from '../components/carrusel';
 
+interface Servicio {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  precio_base: string;
+  activo: boolean;
+  creado_en: string;
+  actualizado_en: string;
+  categoria_id: number;
+}
+
+interface Categoria {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+}
+
 export default function Home() {
+  const navigate = useNavigate();
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Cargar servicios y categorías desde la API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [serviciosData, categoriasData] = await Promise.all([
+          getServicios(),
+          getCategorias()
+        ]);
+        
+        // Filtrar solo servicios activos
+        const serviciosActivos = serviciosData.filter((servicio: Servicio) => servicio.activo);
+        setServicios(serviciosActivos);
+        setCategorias(categoriasData);
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+        // En caso de error, podrías mostrar un mensaje o usar datos de respaldo
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const testimonios = [ 
     {
       name: 'María López',
@@ -28,50 +77,20 @@ export default function Home() {
     },
   ];
 
-  const paquetes = [
-    {
-      title: 'Paquete Básico',
-      description: 'Incluye servicios esenciales.',
-      price: '$1,200',
-      features: ['Ataúd estándar', 'Traslado local', 'Asesoría básica'],
-      image: 'https://via.placeholder.com/300x200?text=Paquete+Basico',
-    },
-    {
-      title: 'Paquete Premium',
-      description: 'Un servicio completo con detalles personalizados.',
-      price: '$3,500',
-      features: ['Ataúd de lujo', 'Ceremonia personalizada', 'Asesoría completa'],
-      image: 'https://via.placeholder.com/300x200?text=Paquete+Premium',
-    },
-    {
-      title: 'Paquete Familiar',
-      description: 'Pensado para brindar apoyo integral a toda la familia.',
-      price: '$2,800',
-      features: ['Ataúd premium', 'Traslado regional', 'Apoyo psicológico'],
-      image: 'https://via.placeholder.com/300x200?text=Paquete+Familiar',
-    },
-    {
-      title: 'Paquete Ejecutivo',
-      description: 'Servicios exclusivos para clientes exigentes.',
-      price: '$5,000',
-      features: ['Ataúd ejecutivo', 'Traslado internacional', 'Ceremonia VIP'],
-      image: 'https://via.placeholder.com/300x200?text=Paquete+Ejecutivo',
-    },
-    {
-      title: 'Paquete Económico',
-      description: 'Una opción accesible sin comprometer la calidad.',
-      price: '$900',
-      features: ['Ataúd básico', 'Traslado local', 'Asesoría económica'],
-      image: 'https://via.placeholder.com/300x200?text=Paquete+Economico',
-    },
-    {
-      title: 'Paquete Memorial',
-      description: 'Incluye servicios para honrar la memoria de manera especial.',
-      price: '$4,200',
-      features: ['Ataúd personalizado', 'Ceremonia conmemorativa', 'Libro de recuerdos'],
-      image: 'https://via.placeholder.com/300x200?text=Paquete+Memorial',
-    },
+  // Imágenes por defecto para los servicios (puedes ajustar según tus necesidades)
+  const imagenesServicios = [
+    'https://efuneraria.com/wp-content/uploads/2022/02/que-es-una-funeraria.jpg',
+    'https://upload.wikimedia.org/wikipedia/commons/b/bd/JapaneseFuneralArrangementTokyo.jpg',
+    'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQloFGP-lru6HENP-FFVZnoPYvE10QmsVTX3g&s',
+    'https://funeza.com/wp-content/uploads/2024/04/thumbnail-3.jpg',
+    'https://static.abc.es/media/sociedad/2018/04/06/ataudes-kqFH--1240x698@abc.jpg',
   ];
+
+  // Función para obtener el nombre de la categoría
+  const getCategoryName = (categoriaId: number): string => {
+    const categoria = categorias.find(cat => cat.id === categoriaId);
+    return categoria?.nombre || 'Categoría no encontrada';
+  };
 
   return (
     <>
@@ -162,19 +181,20 @@ export default function Home() {
             <Button
               variant="contained"
               sx={{
-              backgroundColor: '#6C4F4B',
-              color: '#F2EFEA',
-              borderRadius: 50,
-              px: 16,
-              py: 6, 
-              fontSize: '1rem', 
-              whiteSpace: 'nowrap',
-              '&:hover': { backgroundColor: '#A48E5F' },
+                backgroundColor: '#6C4F4B',
+                color: '#F2EFEA',
+                borderRadius: 50,
+                px: 16,
+                py: 6,
+                fontSize: '1rem',
+                whiteSpace: 'nowrap',
+                '&:hover': { backgroundColor: '#A48E5F' },
               }}
+              onClick={() => navigate('/Cotizacion')}
             >
               Cotizar ahora
             </Button>
-            </Box>
+          </Box>
 
           {/* Palabras como botones */}
           <Box
@@ -211,57 +231,66 @@ export default function Home() {
         </Box>
       </Section>
 
-      {/* Sección de Paquetes */}
-<Box
-  sx={{
-    width: '100%',
-    backgroundColor: '#6C4F4B',
-    color: '#F2EFEA',
-    py: 5,
-    textAlign: 'center',
-    borderRadius: 2, // Redondea las esquinas del contenedor principal
-  }}
->
-  <Container sx={{ width: '100%' }}>
-    <Typography
-      variant="h2"
-      sx={{
-        fontFamily: `'Playfair Display', serif`,
-        fontWeight: 700,
-        mb: 3,
-      }}
-    >
-      Paquetes
-    </Typography>
-    <Carrusel>
-      {paquetes.map((paquete, index) => (
-        <Box
-          key={index}
-          sx={{
-            flex: '0 0 auto',
-            minWidth: '300px',
-            borderRadius: 2, // Redondea las esquinas de cada tarjeta
-            overflow: 'hidden', // Asegura que el contenido no se desborde
-          }}
-        >
-          <PackageCard
-            nombre={paquete.title}
-            descripcion={paquete.description}
-            precio={paquete.price}
-            servicios={paquete.features.map((feature) => ({
-              nombre: feature,
-              descripcion: '',
-            }))}
-          />
-        </Box>
-      ))}
-    </Carrusel>
-  </Container>
-</Box>
+      {/* Sección de Servicios */}
+      <Box
+        sx={{
+          width: '100%',
+          backgroundColor: '#6C4F4B',
+          color: '#F2EFEA',
+          py: 5,
+          textAlign: 'center',
+          borderRadius: 2,
+        }}
+      >
+        <Container sx={{ width: '100%' }}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontFamily: `'Playfair Display', serif`,
+              fontWeight: 700,
+              mb: 3,
+            }}
+          >
+            Nuestros Servicios
+          </Typography>
+          
+          {loading ? (
+            <Typography variant="body1" sx={{ color: '#F2EFEA' }}>
+              Cargando servicios...
+            </Typography>
+          ) : servicios.length > 0 ? (
+            <Carrusel>
+              {servicios.map((servicio, index) => (
+                <Box
+                  key={servicio.id}
+                  sx={{
+                    flex: '0 0 auto',
+                    minWidth: '300px',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <PackageCard
+                    servicio={servicio}
+                    imagen={imagenesServicios[index % imagenesServicios.length]}
+                    onVerPaquete={(servicioSeleccionado) => {
+                      console.log('Servicio seleccionado:', servicioSeleccionado);
+                      console.log('Categoría:', getCategoryName(servicioSeleccionado.categoria_id));
+                    }}
+                  />
+                </Box>
+              ))}
+            </Carrusel>
+          ) : (
+            <Typography variant="body1" sx={{ color: '#F2EFEA' }}>
+              No hay servicios disponibles en este momento.
+            </Typography>
+          )}
+        </Container>
+      </Box>
 
       {/* Secciones adicionales */}
       <Box
-        id="quienes-somos"
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
@@ -322,6 +351,7 @@ export default function Home() {
           </Container>
         </Box>
       </Box>
+      <FAQComponent/>
     </>
   );
 }
