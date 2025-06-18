@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TextInput, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, TextInput, Image, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 const obituariosMock = [
   {
@@ -87,6 +88,7 @@ const obituariosMock = [
 export default function SearchObituaryScreen() {
   const [search, setSearch] = useState("");
   const [data, setData] = useState(obituariosMock);
+  const navigation = useNavigation();
 
   const handleSearch = (text) => {
     setSearch(text);
@@ -126,6 +128,52 @@ export default function SearchObituaryScreen() {
         ListEmptyComponent={<Text style={styles.noResults}>No se encontraron obituarios.</Text>}
         contentContainerStyle={{ paddingBottom: 30 }}
       />
+      {/* Barra de navegación inferior */}
+      <View style={styles.bottomNav}>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <Image
+            source={require("./assets/home-icon.png")}
+            style={styles.navIcon}
+          />
+          <Text style={styles.navLabel}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Products")}
+        >
+          <Image
+            source={require("./assets/user-icon.png")}
+            style={styles.navIcon}
+          />
+          <Text style={styles.navLabel}>Servicios</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Cart")}
+        >
+          <Image
+            source={require("./assets/cart-icon.png")}
+            style={styles.navIcon}
+          />
+          <Text style={styles.navLabel}>Paquetes</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Buscar")}
+        >
+          <Image
+            source={require("./assets/search-icon.png")}
+            style={styles.navIcon}
+          />
+          <Text style={styles.navLabel}>Buscar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -197,5 +245,33 @@ const styles = StyleSheet.create({
     color: '#B59F6B',
     fontSize: 16,
     marginTop: 30,
+  },
+  bottomNav: {
+    flexDirection: "row",
+    height: 60,
+    backgroundColor: "#2E3B4E",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  navItem: {
+    alignItems: "center",
+  },
+  navIcon: {
+    width: 24,
+    height: 24,
+    marginBottom: 3,
+    resizeMode: "contain",
+    tintColor: "#ffffff",
+  },
+  navLabel: {
+    fontSize: 12,
+    color: "#ffffff",
   },
 });

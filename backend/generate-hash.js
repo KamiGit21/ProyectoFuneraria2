@@ -1,14 +1,11 @@
 // backend/generate-hash.js
 const bcrypt = require('bcrypt');
 
-const password = process.argv[2] || 'tuContraseñaSecreta'; // Puedes pasar la contraseña como argumento
-const saltRounds = 10;
+async function generateHash() {
+  const password = '123456'; // La contraseña que queremos usar
+  const hash = await bcrypt.hash(password, 10);
+  console.log('Password:', password);
+  console.log('Hash:', hash);
+}
 
-bcrypt.hash(password, saltRounds, (err, hash) => {
-  if (err) {
-    console.error('Error generando hash:', err);
-  } else {
-    console.log(`Contraseña en texto plano: ${password}`);
-    console.log(`Hash generado: ${hash}`);
-  }
-});
+generateHash();

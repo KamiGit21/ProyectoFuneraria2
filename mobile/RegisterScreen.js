@@ -149,25 +149,31 @@ export default function RegisterScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.navItemActive}
-          onPress={() => navigation.navigate("Login")}
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Products")}
         >
           <Image
             source={require("./assets/user-icon.png")}
-            style={styles.navIconActive}
+            style={styles.navIcon}
           />
-          <Text style={styles.navLabelActive}>Login</Text>
+          <Text style={styles.navLabel}>Servicios</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} disabled>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Cart")}
+        >
           <Image
             source={require("./assets/cart-icon.png")}
             style={styles.navIcon}
           />
-          <Text style={styles.navLabel}>Carrito</Text>
+          <Text style={styles.navLabel}>Productos</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navItem} disabled>
+        <TouchableOpacity
+          style={styles.navItem}
+          onPress={() => navigation.navigate("Buscar")}
+        >
           <Image
             source={require("./assets/search-icon.png")}
             style={styles.navIcon}
@@ -243,37 +249,30 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
+    height: 60,
     backgroundColor: "#2E3B4E",
-    paddingVertical: 10,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 10,
   },
   navItem: {
-    alignItems: "center",
-  },
-  navItemActive: {
     alignItems: "center",
   },
   navIcon: {
     width: 24,
     height: 24,
-    marginBottom: 4,
-    tintColor: "#fff",
-  },
-  navIconActive: {
-    width: 24,
-    height: 24,
-    marginBottom: 4,
-    tintColor: "#FFD700", // icono activo en dorado
+    marginBottom: 3,
+    resizeMode: "contain",
+    tintColor: "#ffffff",
   },
   navLabel: {
-    color: "#fff",
     fontSize: 12,
-  },
-  navLabelActive: {
-    color: "#FFD700",
-    fontSize: 12,
+    color: "#ffffff",
   },
 });

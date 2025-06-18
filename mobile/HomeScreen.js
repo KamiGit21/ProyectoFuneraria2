@@ -63,9 +63,10 @@ export default function HomeScreen() {
             {/* Paquete Esencial */}
             <View style={styles.paqueteCard}>
               <Text style={styles.paqueteTitulo}>Paquete Esencial</Text>
-              <View style={styles.imagenPlaceholder}>
-                <Text style={styles.imagenTexto}>Imagen</Text>
-              </View>
+              <Image
+                source={require("./assets/fotohome.jpg")}
+                style={styles.imagenPaquete}
+              />
               <View style={styles.paqueteDetalles}>
                 <Text style={styles.paqueteTexto}>- Ataúd estándar</Text>
                 <Text style={styles.paqueteTexto}>- Traslado local</Text>
@@ -75,7 +76,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <View style={styles.precioContainer}>
-                <Text style={styles.precio}>Precio: $1,200</Text>
+                <Text style={styles.precio}>Precio: Bs 1,200</Text>
                 <TouchableOpacity>
                   <Text style={styles.verPaquete}>Ver paquete</Text>
                 </TouchableOpacity>
@@ -85,9 +86,10 @@ export default function HomeScreen() {
             {/* Paquete Intermedio */}
             <View style={styles.paqueteCard}>
               <Text style={styles.paqueteTitulo}>Paquete Intermedio</Text>
-              <View style={styles.imagenPlaceholder}>
-                <Text style={styles.imagenTexto}>Imagen</Text>
-              </View>
+              <Image
+                source={require("./assets/fotohome.jpg")}
+                style={styles.imagenPaquete}
+              />
               <View style={styles.paqueteDetalles}>
                 <Text style={styles.paqueteTexto}>- Ataúd de lujo</Text>
                 <Text style={styles.paqueteTexto}>- Traslado nacional</Text>
@@ -98,7 +100,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <View style={styles.precioContainer}>
-                <Text style={styles.precio}>Precio: $3,500</Text>
+                <Text style={styles.precio}>Precio: Bs 3,500</Text>
                 <TouchableOpacity>
                   <Text style={styles.verPaquete}>Ver paquete</Text>
                 </TouchableOpacity>
@@ -108,9 +110,10 @@ export default function HomeScreen() {
             {/* Paquete Premium */}
             <View style={styles.paqueteCard}>
               <Text style={styles.paqueteTitulo}>Paquete Premium</Text>
-              <View style={styles.imagenPlaceholder}>
-                <Text style={styles.imagenTexto}>Imagen</Text>
-              </View>
+              <Image
+                source={require("./assets/fotohome.jpg")}
+                style={styles.imagenPaquete}
+              />
               <View style={styles.paqueteDetalles}>
                 <Text style={styles.paqueteTexto}>- Ataúd premium</Text>
                 <Text style={styles.paqueteTexto}>- Traslado regional</Text>
@@ -121,7 +124,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <View style={styles.precioContainer}>
-                <Text style={styles.precio}>Precio: $2,800</Text>
+                <Text style={styles.precio}>Precio: Bs 2,800</Text>
                 <TouchableOpacity>
                   <Text style={styles.verPaquete}>Ver paquete</Text>
                 </TouchableOpacity>
@@ -155,9 +158,10 @@ export default function HomeScreen() {
             {/* Testimonio 1 */}
             <View style={styles.testimonioCard}>
               <View style={styles.testimonioTop}>
-                <View style={styles.fotoPlaceholder}>
-                  <Text style={styles.fotoText}>Foto</Text>
-                </View>
+                <Image
+                  source={require("./assets/persona.png")}
+                  style={styles.fotoPlaceholder}
+                />
                 <View style={styles.testimonioInfo}>
                   <Text style={styles.testimonioMensaje}>
                     El servicio fue excepcional
@@ -171,9 +175,10 @@ export default function HomeScreen() {
             {/* Testimonio 2 */}
             <View style={styles.testimonioCard}>
               <View style={styles.testimonioTop}>
-                <View style={styles.fotoPlaceholder}>
-                  <Text style={styles.fotoText}>Foto</Text>
-                </View>
+                <Image
+                  source={require("./assets/persona.png")}
+                  style={styles.fotoPlaceholder}
+                />
                 <View style={styles.testimonioInfo}>
                   <Text style={styles.testimonioMensaje}>
                     LumenGest nos ofreció un trato humano y profesional.
@@ -183,7 +188,6 @@ export default function HomeScreen() {
               </View>
               <Text style={styles.testimonioFecha}>22 de abril de 2023</Text>
             </View>
-
           </View>
         </View>
       </ScrollView>
@@ -203,13 +207,13 @@ export default function HomeScreen() {
 
         <TouchableOpacity
           style={styles.navItem}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => navigation.navigate("Products")}
         >
           <Image
             source={require("./assets/user-icon.png")}
             style={styles.navIcon}
           />
-          <Text style={styles.navLabel}>Login</Text>
+          <Text style={styles.navLabel}>Servicios</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -220,7 +224,7 @@ export default function HomeScreen() {
             source={require("./assets/cart-icon.png")}
             style={styles.navIcon}
           />
-          <Text style={styles.navLabel}>Carrito</Text>
+          <Text style={styles.navLabel}>Paquetes</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -341,18 +345,12 @@ const styles = StyleSheet.create({
     color: "#6C4F4B",
     textAlign: "center",
   },
-  imagenPlaceholder: {
-    backgroundColor: "#CED2D4",
+  imagenPaquete: {
+    width: "100%",
     height: 120,
-    justifyContent: "center",
-    alignItems: "center",
     borderRadius: 10,
     marginBottom: 10,
-  },
-  imagenTexto: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
+    resizeMode: "cover",
   },
   paqueteDetalles: {
     marginBottom: 10,
@@ -440,11 +438,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#CED2D4",
     justifyContent: "center",
     alignItems: "center",
-  },
-  fotoText: {
-    color: "#ffffff",
-    fontWeight: "bold",
-    fontSize: 16,
   },
   testimonioInfo: {
     flex: 1,

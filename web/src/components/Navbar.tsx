@@ -166,11 +166,13 @@ export default function Navbar() {
                     </ListItemButton>
                   ))}
 
-                  <ListItemButton onClick={doLogout}>
-                    <AccountCircle sx={{ mr: 1 }}/>
-                    <ListItemText primary={user ? 'Cerrar sesión' : 'Iniciar sesión'}
-                                  primaryTypographyProps={{ fontWeight: 600 }}/>
-                  </ListItemButton>
+                  {user && (
+                    <ListItemButton onClick={doLogout}>
+                      <AccountCircle sx={{ mr: 1 }}/>
+                      <ListItemText primary="Cerrar sesión"
+                                    primaryTypographyProps={{ fontWeight: 600 }}/>
+                    </ListItemButton>
+                  )}
                 </List>
               </Box>
             </Drawer>
@@ -192,7 +194,7 @@ export default function Navbar() {
             <CartBtn />
             <RegCliBtn />
 
-            {/* Botón “Administración” solo si EXISTEN ítems */}
+            {/* Botón "Administración" solo si EXISTEN ítems */}
             {adminItems?.length ? (
               <>
                 <Button sx={{ ml: 3, color: TEXT_COLOR, fontWeight: 600 }}
@@ -217,11 +219,13 @@ export default function Navbar() {
               </>
             ) : null}
 
-            <Button startIcon={<AccountCircle />}
-                    sx={{ ml: 3, color: TEXT_COLOR, fontWeight: 600 }}
-                    onClick={doLogout}>
-              {user ? 'Cerrar sesión' : 'Iniciar sesión'}
-            </Button>
+            {user && (
+              <Button startIcon={<AccountCircle />}
+                      sx={{ ml: 3, color: TEXT_COLOR, fontWeight: 600 }}
+                      onClick={doLogout}>
+                Cerrar sesión
+              </Button>
+            )}
           </>
         )}
       </Toolbar>
